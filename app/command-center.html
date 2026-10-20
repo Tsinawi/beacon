@@ -5,16 +5,20 @@
 <style>
 /* Layout: app shell — slim header, community rail on the left, month calendar as the working surface, post editor slides in from the right. */
 :root {
-  --bg: #f3f5f8;
+  /* Beacon Management design system: blue #153a58, teal #55c1c7, coral #ee8f80, tan #f6ecd6 */
+  --bg: #faf6ee;
   --surface: #ffffff;
-  --surface-2: #e9edf3;
-  --line: #d3dae4;
-  --fg: #142235;
-  --muted: #5a6a80;
-  --navy: #14365c;
-  --beam: #e8a317;
-  --beam-ink: #3d2800;
-  --focus: #2f6fd6;
+  --surface-2: #f1ebdd;
+  --line: #ddd5c3;
+  --fg: #132a3f;
+  --muted: #5d6874;
+  --navy: #153a58;
+  --header: #153a58;
+  --beam: #55c1c7;
+  --beam-ink: #0b2a3f;
+  --coral: #ee8f80;
+  --tan: #f6ecd6;
+  --focus: #2b8f96;
 
   --t-amenity: #1f8a7a;
   --t-floorplan: #4a5bd4;
@@ -40,8 +44,8 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0d1520; --surface: #152131; --surface-2: #1c2b3e; --line: #2a3b52;
-    --fg: #e6edf6; --muted: #93a3b8; --navy: #8fb7e8; --beam: #f2b632; --beam-ink: #2a1c00; --focus: #7aa8f0;
+    --bg: #0c1724; --surface: #13233a; --surface-2: #1a2d46; --line: #2a405c;
+    --fg: #e8eef5; --muted: #98a8ba; --navy: #9cc5e6; --header: #0b1c2e; --beam: #55c1c7; --beam-ink: #06202f; --coral: #f2a397; --tan: #3b3427; --focus: #7fd3d8;
     --t-amenity: #4cc2ae; --t-floorplan: #8b98f2; --t-holiday: #ef7a72; --t-funday: #f0a83a; --t-video: #bf8bea; --t-special: #6cc77a; --t-other: #98a4b5;
     --ok: #6fd193; --ok-bg: #173527; --warn: #f2bd5c; --warn-bg: #3a2c12; --bad: #f28b82; --bad-bg: #3d1c1a;
     --shadow: 0 10px 30px rgba(0, 0, 0, .5);
@@ -49,8 +53,8 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0d1520; --surface: #152131; --surface-2: #1c2b3e; --line: #2a3b52;
-  --fg: #e6edf6; --muted: #93a3b8; --navy: #8fb7e8; --beam: #f2b632; --beam-ink: #2a1c00; --focus: #7aa8f0;
+  --bg: #0c1724; --surface: #13233a; --surface-2: #1a2d46; --line: #2a405c;
+  --fg: #e8eef5; --muted: #98a8ba; --navy: #9cc5e6; --header: #0b1c2e; --beam: #55c1c7; --beam-ink: #06202f; --coral: #f2a397; --tan: #3b3427; --focus: #7fd3d8;
   --t-amenity: #4cc2ae; --t-floorplan: #8b98f2; --t-holiday: #ef7a72; --t-funday: #f0a83a; --t-video: #bf8bea; --t-special: #6cc77a; --t-other: #98a4b5;
   --ok: #6fd193; --ok-bg: #173527; --warn: #f2bd5c; --warn-bg: #3a2c12; --bad: #f28b82; --bad-bg: #3d1c1a;
   --shadow: 0 10px 30px rgba(0, 0, 0, .5);
@@ -72,19 +76,17 @@ h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
 .eyebrow { font-family: var(--f-display); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 
 /* Header */
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--navy); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--header); }
 .app-header {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
-  background: var(--navy); color: #fff;
+  background: var(--header); color: #fff;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 10px;
   display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
 }
-:root:not([data-theme="light"]) .app-header { }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .app-header { background: #0a1a2e; } :root:not([data-theme="light"]) body::before { background: #0a1a2e; } }
-:root[data-theme="dark"] .app-header, :root[data-theme="dark"] body::before { background: #0a1a2e; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.brand-mark { width: 28px; height: 28px; flex: none; }
+.brand-mark { height: 40px; width: auto; flex: none; display: block; }
+.brand-div { width: 1px; align-self: stretch; background: rgba(255,255,255,.25); }
 .brand-name { font-family: var(--f-display); font-weight: 800; font-size: 17px; letter-spacing: -.01em; white-space: nowrap; }
 .brand-sub { font-size: 12px; opacity: .75; white-space: nowrap; }
 .tabs { display: flex; gap: 4px; margin-left: auto; }
@@ -307,16 +309,11 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 
 <header class="app-header">
   <div class="brand">
-    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-      <path d="M16 3 L20 9 L12 9 Z" fill="#e8a317"/>
-      <path d="M13 10 h6 l2 19 h-10 z" fill="#ffffff"/>
-      <rect x="12.5" y="15" width="7" height="2.5" fill="#14365c"/>
-      <rect x="12" y="21" width="8" height="2.5" fill="#14365c"/>
-      <path d="M21 6 L31 2 L31 10 Z M11 6 L1 2 L1 10 Z" fill="#e8a317" opacity=".55"/>
-    </svg>
+    <img class="brand-mark" src="/_blob/d04578bbf195e2568cfe504c34a3582a" alt="Beacon Management">
+    <span class="brand-div" aria-hidden="true"></span>
     <div>
       <div class="brand-name">Beacon Social</div>
-      <div class="brand-sub">Beacon Management · command center</div>
+      <div class="brand-sub">Social command center</div>
     </div>
   </div>
   <nav class="tabs" role="tablist" aria-label="Sections">
@@ -351,6 +348,7 @@ const TYPES = {
   special:   { label: 'Special',    tok: '--t-special' },
   other:     { label: 'Other',      tok: '--t-other' },
 };
+const BRAND = { blue: '#153a58', teal: '#55c1c7', coral: '#ee8f80', tan: '#f6ecd6', logo: 'b03616ee219788d7514c6e86e73656b4', logoWhite: 'd04578bbf195e2568cfe504c34a3582a' };
 const PLATFORMS = { facebook: 'Facebook', instagram: 'Instagram', google: 'Google' };
 const LIMITS = { instagram: 2200, facebook: 5000, google: 1500 };
 const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -484,7 +482,7 @@ function loadImg(id) {
   return imgCache.get(id);
 }
 function shade(hex, amt) {
-  const n = parseInt(String(hex || '#14365c').replace('#',''), 16);
+  const n = parseInt(String(hex || BRAND.blue).replace('#',''), 16);
   let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
   r = Math.max(0, Math.min(255, r + amt)); g = Math.max(0, Math.min(255, g + amt)); b = Math.max(0, Math.min(255, b + amt));
   return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
@@ -499,7 +497,7 @@ async function drawComposite(canvas, p) {
   const SZ = 1080; canvas.width = SZ; canvas.height = SZ;
   const ctx = canvas.getContext('2d');
   const c = comm(p.communityId) || {};
-  const color = c.color || '#14365c';
+  const color = c.color || BRAND.blue;
   try { await document.fonts.ready; } catch (e) {}
   let photo = null;
   if (p.assetId && p.mediaKind !== 'video') { try { photo = await loadImg(p.assetId); } catch (e) { photo = null; } }
@@ -509,13 +507,13 @@ async function drawComposite(canvas, p) {
     ctx.drawImage(photo, (SZ - w) / 2, (SZ - hh) / 2, w, hh);
   } else {
     const g = ctx.createLinearGradient(0, 0, SZ, SZ);
-    g.addColorStop(0, shade(color, 30)); g.addColorStop(1, shade(color, -45));
+    g.addColorStop(0, shade(BRAND.blue, 28)); g.addColorStop(1, shade(BRAND.blue, -38));
     ctx.fillStyle = g; ctx.fillRect(0, 0, SZ, SZ);
     // beacon rays
-    ctx.save(); ctx.globalAlpha = .12; ctx.fillStyle = '#ffffff';
+    ctx.save(); ctx.globalAlpha = .16; ctx.fillStyle = BRAND.teal;
     for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.moveTo(SZ*0.82, SZ*0.18); const a = -Math.PI*0.95 + i*0.13; ctx.lineTo(SZ*0.82 + Math.cos(a)*1600, SZ*0.18 + Math.sin(a)*1600); ctx.lineTo(SZ*0.82 + Math.cos(a+0.05)*1600, SZ*0.18 + Math.sin(a+0.05)*1600); ctx.closePath(); ctx.fill(); }
     ctx.restore();
-    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 3;
+    ctx.save(); ctx.strokeStyle = 'rgba(85,193,199,.28)'; ctx.lineWidth = 3;
     for (let r = 120; r < 900; r += 110) { ctx.beginPath(); ctx.arc(SZ*0.82, SZ*0.18, r, 0, Math.PI*2); ctx.stroke(); }
     ctx.restore();
   }
@@ -528,11 +526,11 @@ async function drawComposite(canvas, p) {
     ctx.font = '800 92px "Schibsted Grotesk", Arial, sans-serif';
     const ls = wrapText(ctx, label, SZ - 140).slice(0, 3);
     let y = SZ - 120 - (ls.length - 1) * 98;
-    ctx.fillStyle = '#e8a317'; ctx.fillRect(70, y - 120, 90, 10);
+    ctx.fillStyle = p.type === 'holiday' ? BRAND.coral : BRAND.teal; ctx.fillRect(70, y - 120, 90, 10);
     ctx.fillStyle = '#ffffff';
     for (const l of ls) { ctx.fillText(l, 70, y); y += 98; }
-    ctx.font = '700 30px "Schibsted Grotesk", Arial, sans-serif'; ctx.globalAlpha = .9;
-    ctx.fillText(String(c.name || '').toUpperCase(), 72, SZ - 60); ctx.globalAlpha = 1;
+    ctx.font = '700 30px "Schibsted Grotesk", Arial, sans-serif'; ctx.fillStyle = BRAND.tan;
+    ctx.fillText(String(c.name || '').toUpperCase(), 72, SZ - 60); ctx.fillStyle = '#ffffff';
   }
   // corner badge
   const corner = p.overlay?.corner || c.defaultCorner || 'tr';
@@ -545,10 +543,15 @@ async function drawComposite(canvas, p) {
     ctx.drawImage(logo, bx + (bw - logo.naturalWidth*s)/2, by + (bh - logo.naturalHeight*s)/2, logo.naturalWidth*s, logo.naturalHeight*s);
   } else {
     ctx.fillStyle = color; ctx.textAlign = 'center';
-    ctx.font = '800 50px "Schibsted Grotesk", Arial, sans-serif';
-    ctx.fillText(String(c.short || (c.name || '?').slice(0,2)).toUpperCase().slice(0,3), bx + bw/2, by + bh/2 + 10);
-    ctx.font = '700 15px "Schibsted Grotesk", Arial, sans-serif'; ctx.globalAlpha = .7;
-    ctx.fillText('BEACON', bx + bw/2, by + bh - 22); ctx.globalAlpha = 1; ctx.textAlign = 'left';
+    ctx.font = '800 46px "Schibsted Grotesk", Arial, sans-serif';
+    ctx.fillText(String(c.short || (c.name || '?').slice(0,2)).toUpperCase().slice(0,3), bx + bw/2, by + 64);
+    ctx.textAlign = 'left';
+    let bl = null; try { bl = await loadImg(BRAND.logo); } catch (e) {}
+    if (bl) { const w = 64, hh2 = w * bl.naturalHeight / bl.naturalWidth; ctx.drawImage(bl, bx + (bw - w) / 2, by + bh - hh2 - 14, w, hh2); }
+  }
+  if (!photo) {
+    let wl = null; try { wl = await loadImg(BRAND.logoWhite); } catch (e) {}
+    if (wl) { const w = 150, hh3 = w * wl.naturalHeight / wl.naturalWidth; ctx.globalAlpha = .95; ctx.drawImage(wl, SZ - 40 - w, SZ - 74 - hh3, w, hh3); ctx.globalAlpha = 1; }
   }
   if (S.settings?.eho !== false) {
     ctx.font = '700 22px "Atkinson Hyperlegible", Arial, sans-serif'; ctx.textAlign = 'right';
@@ -1138,7 +1141,7 @@ function renderCommunities(main) {
       h('div', { class: 'row' }, fld('Name', 'name'), h('div', { class: 'field', style: { flex: '0 0 110px' } }, h('label', { for: 'c-short', text: 'Short code' }), h('input', { type: 'text', id: 'c-short', maxlength: 3, value: c.short || '', disabled: ro, oninput: e => { c.short = e.target.value.toUpperCase(); } }))),
       fld('Website (source of truth)', 'website', { type: 'url', placeholder: 'https://' }),
       h('div', { class: 'row' }, fld('City', 'city'), h('div', { class: 'field', style: { flex: '0 0 90px' } }, h('label', { for: 'c-state', text: 'State' }), h('input', { type: 'text', id: 'c-state', value: c.state || '', disabled: ro, oninput: e => { c.state = e.target.value; } })),
-        h('div', { class: 'field', style: { flex: '0 0 80px' } }, h('label', { for: 'c-color', text: 'Color' }), h('input', { type: 'color', class: 'swatch', id: 'c-color', value: c.color || '#14365c', disabled: ro, oninput: e => { c.color = e.target.value; } }))),
+        h('div', { class: 'field', style: { flex: '0 0 80px' } }, h('label', { for: 'c-color', text: 'Color' }), h('input', { type: 'color', class: 'swatch', id: 'c-color', value: c.color || BRAND.blue, disabled: ro, oninput: e => { c.color = e.target.value; } }))),
       h('div', { class: 'row' }, fld('Phone', 'phone'), fld('Address', 'address')),
       h('div', { class: 'field' }, h('label', { for: 'c-audience', text: 'Audience notes (sets tone only)' }),
         h('textarea', { id: 'c-audience', rows: 3, disabled: ro, oninput: e => { c.audience = e.target.value; } }, c.audience || ''),
@@ -1172,7 +1175,7 @@ function addCommunity() {
     actions: [{ label: 'Cancel' }, { label: 'Add', primary: true, onClick: async () => {
       if (!name.value.trim()) { name.focus(); return true; }
       const short = name.value.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 3).toUpperCase();
-      const ref = await S.db.collection('communities').add({ name: name.value.trim(), short, website: site.value.trim(), color: '#14365c', active: true, defaultCorner: 'tr',
+      const ref = await S.db.collection('communities').add({ name: name.value.trim(), short, website: site.value.trim(), color: BRAND.blue, active: true, defaultCorner: 'tr',
         amenities: [], floorPlans: [], specials: [], neighborhood: [], harvest: { status: site.value.trim() ? 'requested' : 'none', requestedAt: stamp() }, updatedAt: stamp() });
       S.editCommunity = ref.id; toast('Community added.');
     } }] });
