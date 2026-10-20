@@ -19,10 +19,10 @@ The community website is the source of truth. There is no PMS integration.
 
 ## Data model
 
-- `communities/{slug}`: `name, short, website, city, state, color, audience, voice, phone, address, amenities[], floorPlans[{name,beds,baths,sqft,notes}], specials[{text,seenAt,source}], neighborhood[], logoAssetId, defaultCorner, active, harvest{status,lastRun,note,requestedAt}`
-- `posts/{id}`: `communityId, date (YYYY-MM-DD), time (HH:MM), type (amenity|floorplan|holiday|funday|video|special|other), title, caption, gbpCaption, hashtags, platforms{facebook,instagram,google}, assetId, mediaKind (image|video), overlay{corner,label}, status (draft|approved|posted|held|failed), needsData, finalAssetId, approvedAt, postedAt, error, createdBy`
+- `communities/{slug}`: `name, short, hashtagSet, links{home,floorplans,amenities,tour,gallery,neighborhood} (tracked URLs), logoTone (auto|original|white|black), website, city, state, color, audience, voice, phone, address, amenities[], floorPlans[{name,beds,baths,sqft,notes}], specials[{text,seenAt,source}], neighborhood[], logoAssetId, defaultCorner, active, harvest{status,lastRun,note,requestedAt}`
+- `posts/{id}`: `communityId, date (YYYY-MM-DD), time (HH:MM, rotated from settings.timeSlots), type (amenity|floorplan|holiday|funday|video|special|other), title, caption, gbpCaption, hashtags, linkKey (home|floorplans|amenities|tour|gallery|neighborhood|"" — defaults by type when absent), platforms{facebook,instagram,google}, assetId, mediaKind (image|video), overlay{corner,label}, status (draft|approved|posted|held|failed), needsData, finalAssetId (4:5, 1080×1350), finalGoogleAssetId (4:3, 1200×900), approvedAt, postedAt, error, createdBy`
 - `media/{id}`: `communityId, assetId, kind, caption, source (website|upload|onedrive), addedAt`
-- `settings/brand`: `company, voice, cadence, defaultTime, mix{type: weight}, eho, extraPhrases[], publishing{meta,google,harvester,publisher}`
+- `settings/brand`: `company, voice, cadence, timeSlots[], mix{type: weight}, eho, extraPhrases[], publishing{meta,google,harvester,publisher}`
 
 Access rules: anyone the page is shared with can read; only Editors and the owner can write.
 
@@ -30,7 +30,10 @@ Access rules: anyone the page is shared with can read; only Editors and the owne
 
 1. Find posts where `status == "approved"` and `date`/`time` is in the past.
 2. If the caption mentions a special, re-read the community website. If the special has changed or is gone, set `status: "held"` with an `error` explaining why.
-3. Post `finalAssetId` (or the video `assetId`) with the caption and hashtags to each enabled platform. Google gets `gbpCaption || caption`, without hashtags.
+3. Resolve the link: `communities/{communityId}.links[linkKey]` (linkKey defaults by type: amenity→amenities, floorplan→floorplans, video→tour, everything else→home).
+   - Facebook: `finalAssetId` (or the video) with `caption + "\n\n" + link + "\n\n" + hashtags`.
+   - Instagram: `finalAssetId` (or the video as a Reel) with `caption + "\n\n" + hashtags`. No link; captions can't hold one.
+   - Google Business Profile: `finalGoogleAssetId` with `gbpCaption || caption`, no hashtags, and a "Learn more" call to action pointing at the link.
 4. Set `status: "posted"` and `postedAt`, or `status: "failed"` and `error`.
 
 ## Seed data

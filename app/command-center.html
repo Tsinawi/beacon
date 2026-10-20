@@ -248,10 +248,14 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .preview-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .preview-top { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
 .avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--f-display); font-weight: 800; font-size: 13px; flex: none; background-size: cover; background-position: center; }
-.preview-canvas { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; background: var(--surface-2); }
+.preview-canvas { display: block; width: 100%; height: auto; background: var(--surface-2); }
 .preview-video { width: 100%; aspect-ratio: 1/1; background: #000; display: block; }
 .preview-text { padding: 10px 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
 .preview-text .tags { color: var(--focus); }
+.preview-text .hint { margin-top: 10px; font-size: 12px; color: var(--muted); }
+.cta { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.cta-btn { align-self: flex-start; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font-weight: 700; color: var(--focus); }
+.cta .src { overflow-wrap: anywhere; }
 .pv-tabs { display: flex; gap: 4px; padding: 8px 12px 0; }
 .pv-tab { border: 0; background: transparent; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12.5px; color: var(--muted); }
 .pv-tab[aria-selected="true"] { background: var(--surface-2); color: var(--fg); }
@@ -285,6 +289,9 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .harvest .state.bad { color: var(--bad); } .harvest .state.ok { color: var(--ok); } .harvest .state.warn { color: var(--warn); }
 .src { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
 .swatch { width: 38px; height: 38px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: none; cursor: pointer; }
+.link-row { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: 10px; align-items: center; font-size: 13.5px; }
+.link-row input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 7px 10px; font-family: var(--f-mono); font-size: 12.5px; }
+@media (max-width: 520px) { .link-row { grid-template-columns: minmax(0,1fr); gap: 4px; } }
 .mix-row { display: grid; grid-template-columns: 110px minmax(0,1fr) 40px; gap: 10px; align-items: center; }
 .mix-row input[type=range] { width: 100%; accent-color: var(--navy); }
 .steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
@@ -349,6 +356,10 @@ const TYPES = {
   other:     { label: 'Other',      tok: '--t-other' },
 };
 const BRAND = { blue: '#153a58', teal: '#55c1c7', coral: '#ee8f80', tan: '#f6ecd6', logo: 'b03616ee219788d7514c6e86e73656b4', logoWhite: 'd04578bbf195e2568cfe504c34a3582a' };
+const FORMATS = { feed: { w: 1080, h: 1350, label: '4:5 · Facebook & Instagram' }, google: { w: 1200, h: 900, label: '4:3 · Google Business' } };
+const DEFAULT_SLOTS = ['10:00', '11:00', '12:00', '13:00', '14:00'];
+const LINKS = { home: 'Home page', floorplans: 'Floor plans', amenities: 'Amenities', tour: 'Schedule a tour', gallery: 'Photo gallery', neighborhood: 'Neighborhood' };
+const LINK_FOR_TYPE = { amenity: 'amenities', floorplan: 'floorplans', video: 'tour', special: 'home', holiday: 'home', funday: 'home', other: 'home' };
 const PLATFORMS = { facebook: 'Facebook', instagram: 'Instagram', google: 'Google' };
 const LIMITS = { instagram: 2200, facebook: 5000, google: 1500 };
 const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -472,6 +483,8 @@ function readiness(p) {
   const hits = complianceHits([p.title, p.caption, p.gbpCaption, p.overlay?.label].join('\n'));
   for (const x of hits) warnings.push(`Fair housing review: “${x.phrase}”. ${x.why}`);
   if (!p.assetId && p.type !== 'video' && !['holiday','funday'].includes(p.type)) warnings.push('No photo chosen. A branded graphic will be used instead.');
+  const lk = linkKeyFor(p);
+  if (lk && (p.platforms?.facebook || p.platforms?.google) && !linkFor(p)) warnings.push(`No tracking link saved for “${LINKS[lk] || lk}”. Add it on the Communities tab, or the post goes out without a link.`);
   if (!blockers.length && !warnings.length) ok.push('Ready to approve.');
   return { blockers, warnings, ok };
 }
@@ -507,8 +520,9 @@ function tintLogo(img, fill) {
   x.globalCompositeOperation = 'source-in'; x.fillStyle = fill; x.fillRect(0, 0, cv.width, cv.height);
   return cv;
 }
-async function drawComposite(canvas, p) {
-  const SZ = 1080; canvas.width = SZ; canvas.height = SZ;
+async function drawComposite(canvas, p, fmt = 'feed') {
+  const F = FORMATS[fmt] || FORMATS.feed, W = F.w, H = F.h, k = Math.min(W, H) / 1080;
+  canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const c = comm(p.communityId) || {};
   const color = c.color || BRAND.blue;
@@ -516,74 +530,106 @@ async function drawComposite(canvas, p) {
   let photo = null;
   if (p.assetId && p.mediaKind !== 'video') { try { photo = await loadImg(p.assetId); } catch (e) { photo = null; } }
   if (photo) {
-    const s = Math.max(SZ / photo.naturalWidth, SZ / photo.naturalHeight);
+    const s = Math.max(W / photo.naturalWidth, H / photo.naturalHeight);
     const w = photo.naturalWidth * s, hh = photo.naturalHeight * s;
-    ctx.drawImage(photo, (SZ - w) / 2, (SZ - hh) / 2, w, hh);
+    ctx.drawImage(photo, (W - w) / 2, (H - hh) / 2, w, hh);
   } else {
-    const g = ctx.createLinearGradient(0, 0, SZ, SZ);
+    const g = ctx.createLinearGradient(0, 0, W, H);
     g.addColorStop(0, shade(BRAND.blue, 28)); g.addColorStop(1, shade(BRAND.blue, -38));
-    ctx.fillStyle = g; ctx.fillRect(0, 0, SZ, SZ);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     // beacon rays
+    const cx = W * 0.82, cy = H * 0.16, far = 2 * Math.max(W, H);
     ctx.save(); ctx.globalAlpha = .16; ctx.fillStyle = BRAND.teal;
-    for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.moveTo(SZ*0.82, SZ*0.18); const a = -Math.PI*0.95 + i*0.13; ctx.lineTo(SZ*0.82 + Math.cos(a)*1600, SZ*0.18 + Math.sin(a)*1600); ctx.lineTo(SZ*0.82 + Math.cos(a+0.05)*1600, SZ*0.18 + Math.sin(a+0.05)*1600); ctx.closePath(); ctx.fill(); }
+    for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.moveTo(cx, cy); const a = -Math.PI*0.95 + i*0.13; ctx.lineTo(cx + Math.cos(a)*far, cy + Math.sin(a)*far); ctx.lineTo(cx + Math.cos(a+0.05)*far, cy + Math.sin(a+0.05)*far); ctx.closePath(); ctx.fill(); }
     ctx.restore();
-    ctx.save(); ctx.strokeStyle = 'rgba(85,193,199,.28)'; ctx.lineWidth = 3;
-    for (let r = 120; r < 900; r += 110) { ctx.beginPath(); ctx.arc(SZ*0.82, SZ*0.18, r, 0, Math.PI*2); ctx.stroke(); }
+    ctx.save(); ctx.strokeStyle = 'rgba(85,193,199,.28)'; ctx.lineWidth = 3 * k;
+    for (let r = 120 * k; r < Math.max(W, H); r += 110 * k) { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke(); }
     ctx.restore();
   }
+  const pad = 70 * k;
   const label = String(p.overlay?.label || '').trim();
   if (label) {
-    const g2 = ctx.createLinearGradient(0, SZ*0.45, 0, SZ);
+    const g2 = ctx.createLinearGradient(0, H*0.45, 0, H);
     g2.addColorStop(0, 'rgba(6,14,26,0)'); g2.addColorStop(1, 'rgba(6,14,26,.82)');
-    ctx.fillStyle = g2; ctx.fillRect(0, SZ*0.45, SZ, SZ*0.55);
-    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'alphabetic';
-    ctx.font = '800 92px "Schibsted Grotesk", Arial, sans-serif';
-    const ls = wrapText(ctx, label, SZ - 140).slice(0, 3);
-    let y = SZ - 120 - (ls.length - 1) * 98;
-    ctx.fillStyle = p.type === 'holiday' ? BRAND.coral : BRAND.teal; ctx.fillRect(70, y - 120, 90, 10);
+    ctx.fillStyle = g2; ctx.fillRect(0, H*0.45, W, H*0.55);
+    ctx.textBaseline = 'alphabetic';
+    const fs = 92 * k, lhgt = 98 * k;
+    ctx.font = `800 ${fs}px "Schibsted Grotesk", Arial, sans-serif`;
+    const ls = wrapText(ctx, label, W - 2 * pad).slice(0, 3);
+    let y = H - 120 * k - (ls.length - 1) * lhgt;
+    ctx.fillStyle = p.type === 'holiday' ? BRAND.coral : BRAND.teal; ctx.fillRect(pad, y - 120 * k, 90 * k, 10 * k);
     ctx.fillStyle = '#ffffff';
-    for (const l of ls) { ctx.fillText(l, 70, y); y += 98; }
-    ctx.font = '700 30px "Schibsted Grotesk", Arial, sans-serif'; ctx.fillStyle = BRAND.tan;
-    ctx.fillText(String(c.name || '').toUpperCase(), 72, SZ - 60); ctx.fillStyle = '#ffffff';
+    for (const l of ls) { ctx.fillText(l, pad, y); y += lhgt; }
+    ctx.font = `700 ${30 * k}px "Schibsted Grotesk", Arial, sans-serif`; ctx.fillStyle = BRAND.tan;
+    ctx.fillText(String(c.name || '').toUpperCase(), pad + 2, H - 60 * k); ctx.fillStyle = '#ffffff';
   }
   // corner logo: the community's own transparent logo straight on the image; boxed short code when there is none
   const corner = p.overlay?.corner || c.defaultCorner || 'tr';
-  const m = 44;
+  const m = 44 * k;
   let logo = null; if (c.logoAssetId) { try { logo = await loadImg(c.logoAssetId); } catch (e) {} }
   if (logo) {
-    const s = Math.min(400 / logo.naturalWidth, 150 / logo.naturalHeight);
+    const s = Math.min(400 * k / logo.naturalWidth, 150 * k / logo.naturalHeight);
     const lw = logo.naturalWidth * s, lh = logo.naturalHeight * s;
-    const lx = corner === 'tl' ? m : SZ - m - lw, ly = m;
+    const lx = corner === 'tl' ? m : W - m - lw, ly = m;
     let tone = c.logoTone || 'auto';
     if (tone === 'auto') tone = regionLuma(ctx, lx, ly, lw, lh) < 150 ? 'white' : 'original';
     const art = tone === 'original' ? logo : tintLogo(logo, tone === 'white' ? '#ffffff' : '#111111');
     ctx.save();
-    if (tone === 'white') { ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 2; }
-    else { ctx.shadowColor = 'rgba(255,255,255,.55)'; ctx.shadowBlur = 12; }
+    if (tone === 'white') { ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 14 * k; ctx.shadowOffsetY = 2 * k; }
+    else { ctx.shadowColor = 'rgba(255,255,255,.55)'; ctx.shadowBlur = 12 * k; }
     ctx.drawImage(art, lx, ly, lw, lh);
     ctx.restore();
   } else {
-    const bw = 132, bh = 132, bx = corner === 'tl' ? m : SZ - m - bw, by = m;
-    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.28)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 6;
-    ctx.fillStyle = 'rgba(255,255,255,.95)'; rr(ctx, bx, by, bw, bh, 26); ctx.fill(); ctx.restore();
+    const bw = 132 * k, bh = 132 * k, bx = corner === 'tl' ? m : W - m - bw, by = m;
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.28)'; ctx.shadowBlur = 24 * k; ctx.shadowOffsetY = 6 * k;
+    ctx.fillStyle = 'rgba(255,255,255,.95)'; rr(ctx, bx, by, bw, bh, 26 * k); ctx.fill(); ctx.restore();
     ctx.fillStyle = color; ctx.textAlign = 'center';
-    ctx.font = '800 46px "Schibsted Grotesk", Arial, sans-serif';
-    ctx.fillText(String(c.short || (c.name || '?').slice(0,2)).toUpperCase().slice(0,3), bx + bw/2, by + 64);
+    ctx.font = `800 ${46 * k}px "Schibsted Grotesk", Arial, sans-serif`;
+    ctx.fillText(String(c.short || (c.name || '?').slice(0,2)).toUpperCase().slice(0,3), bx + bw/2, by + 64 * k);
     ctx.textAlign = 'left';
     let bl = null; try { bl = await loadImg(BRAND.logo); } catch (e) {}
-    if (bl) { const w = 64, hh2 = w * bl.naturalHeight / bl.naturalWidth; ctx.drawImage(bl, bx + (bw - w) / 2, by + bh - hh2 - 14, w, hh2); }
+    if (bl) { const w = 64 * k, hh2 = w * bl.naturalHeight / bl.naturalWidth; ctx.drawImage(bl, bx + (bw - w) / 2, by + bh - hh2 - 14 * k, w, hh2); }
   }
   if (!photo) {
     let wl = null; try { wl = await loadImg(BRAND.logoWhite); } catch (e) {}
-    if (wl) { const w = 150, hh3 = w * wl.naturalHeight / wl.naturalWidth; ctx.globalAlpha = .95; ctx.drawImage(wl, SZ - 40 - w, SZ - 74 - hh3, w, hh3); ctx.globalAlpha = 1; }
+    if (wl) { const w = 150 * k, hh3 = w * wl.naturalHeight / wl.naturalWidth; ctx.globalAlpha = .95; ctx.drawImage(wl, W - 40 * k - w, H - 74 * k - hh3, w, hh3); ctx.globalAlpha = 1; }
   }
   if (S.settings?.eho !== false) {
-    ctx.font = '700 22px "Atkinson Hyperlegible", Arial, sans-serif'; ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(255,255,255,.88)'; ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 6;
-    ctx.fillText('Equal Housing Opportunity', SZ - 40, SZ - 34);
+    ctx.font = `700 ${22 * k}px "Atkinson Hyperlegible", Arial, sans-serif`; ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(255,255,255,.88)'; ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 6 * k;
+    ctx.fillText('Equal Housing Opportunity', W - 40 * k, H - 34 * k);
     ctx.shadowBlur = 0; ctx.textAlign = 'left';
   }
 }
+
+// ---------- scheduling, hashtags, links ----------
+function timeSlots() {
+  const v = (S.settings?.timeSlots || []).filter(t => /^\d{2}:\d{2}$/.test(t));
+  return v.length ? v : DEFAULT_SLOTS;
+}
+function slotFor(cid, date) {
+  const slots = timeSlots();
+  const ci = Math.max(0, commList().findIndex(([id]) => id === cid));
+  const day = date ? parseDs(date).getDate() : 0;
+  return slots[(ci + day) % slots.length];
+}
+function fmtTime(t) {
+  if (!/^\d{2}:\d{2}$/.test(t || '')) return t || '';
+  const [hh, mm] = t.split(':').map(Number);
+  return `${((hh + 11) % 12) + 1}${mm ? ':' + String(mm).padStart(2, '0') : ''}${hh < 12 ? 'am' : 'pm'}`;
+}
+function mergeTags(...sets) {
+  const seen = new Set(), out = [];
+  for (const set of sets) for (const t of String(set || '').split(/\s+/)) {
+    if (!t) continue;
+    const tag = t.startsWith('#') ? t : '#' + t;
+    const key = tag.toLowerCase(); if (seen.has(key)) continue;
+    seen.add(key); out.push(tag);
+  }
+  return out.join(' ');
+}
+function linkKeyFor(p) { return p.linkKey === undefined ? (LINK_FOR_TYPE[p.type] || 'home') : p.linkKey; }
+function linkFor(p) { const key = linkKeyFor(p); return key ? (comm(p.communityId)?.links?.[key] || '') : ''; }
 
 // ---------- data ----------
 async function init() {
@@ -790,18 +836,20 @@ function shiftMonth(n) {
 }
 
 // ---------- approve ----------
-async function renderFinal(p) {
+async function renderFinal(p, fmt) {
   if (!S.assets || p.mediaKind === 'video') return null;
   const cv = document.createElement('canvas');
-  await drawComposite(cv, p);
+  await drawComposite(cv, p, fmt);
   const b = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.9));
   if (!b) return null;
   const up = await S.assets.upload(b, { type: 'image/jpeg' });
   return up.id;
 }
 async function approve(id, p) {
-  const finalAssetId = await renderFinal(p).catch(e => { console.warn(e); return null; });
-  await S.db.doc('posts/' + id).update({ status: 'approved', approvedAt: stamp(), finalAssetId: finalAssetId || null, updatedAt: stamp() });
+  const social = p.platforms?.facebook || p.platforms?.instagram;
+  const finalAssetId = social ? await renderFinal(p, 'feed').catch(e => { console.warn(e); return null; }) : null;
+  const finalGoogleAssetId = p.platforms?.google ? await renderFinal(p, 'google').catch(e => { console.warn(e); return null; }) : null;
+  await S.db.doc('posts/' + id).update({ status: 'approved', approvedAt: stamp(), finalAssetId: finalAssetId || null, finalGoogleAssetId: finalGoogleAssetId || null, updatedAt: stamp() });
 }
 function isReady(p) { const r = readiness(p); return !r.blockers.length && !r.warnings.some(w => w.startsWith('Fair housing')); }
 async function bulkApprove(from, to, label) {
@@ -810,7 +858,7 @@ async function bulkApprove(from, to, label) {
   const ready = items.filter(([, p]) => isReady(p));
   const skipped = items.length - ready.length;
   const body = h('div', { class: 'stack' },
-    h('p', { text: `${ready.length} of ${items.length} drafts for ${label} are ready and will be approved. The final image for each is rendered with its corner badge and saved.` }),
+    h('p', { text: `${ready.length} of ${items.length} drafts for ${label} are ready and will be approved. Final images are rendered in 4:5 for Facebook and Instagram and 4:3 for Google, with the community logo, and saved.` }),
     skipped ? h('div', { class: 'notice', text: `${skipped} will stay as drafts because they need website info, media, or a fair housing review. Open them from the calendar to fix.` }) : null);
   modal({ title: `Approve ${label}`, body, actions: [
     { label: 'Cancel' },
@@ -826,7 +874,7 @@ async function bulkApprove(from, to, label) {
 // ---------- editor drawer ----------
 function blankPost(date) {
   const c = S.community !== 'all' ? S.community : (commList()[0] || [])[0];
-  return { communityId: c, date, time: S.settings?.defaultTime || '10:00', type: 'amenity', title: '', caption: '', gbpCaption: '', hashtags: '',
+  return { communityId: c, date, time: slotFor(c, date), type: 'amenity', title: '', caption: '', gbpCaption: '', hashtags: comm(c)?.hashtagSet || '',
     platforms: { facebook: true, instagram: true, google: false }, assetId: null, mediaKind: null, overlay: { corner: comm(c)?.defaultCorner || 'tr', label: '' },
     status: 'draft', needsData: '', createdBy: 'user' };
 }
@@ -846,7 +894,8 @@ function renderDrawer() {
   const ro = !S.canWrite;
   const set = (k, v, re) => { p[k] = v; if (re) renderDrawer(); else schedulePreview(); };
 
-  const canvas = h('canvas', { class: 'preview-canvas', width: 1080, height: 1080, 'aria-label': 'Image preview' });
+  const fmt = D.pv === 'google' ? 'google' : 'feed';
+  const canvas = h('canvas', { class: 'preview-canvas', width: FORMATS[fmt].w, height: FORMATS[fmt].h, style: { aspectRatio: `${FORMATS[fmt].w} / ${FORMATS[fmt].h}` }, 'aria-label': 'Image preview, ' + FORMATS[fmt].label });
   const r = readiness(p);
   const capCount = h('div', { class: 'counter' });
   const updCount = () => { const n = (p.caption || '').length + (p.hashtags ? p.hashtags.length + 2 : 0); capCount.textContent = `${n} / ${LIMITS.instagram}`; capCount.classList.toggle('over', n > LIMITS.instagram); };
@@ -870,15 +919,14 @@ function renderDrawer() {
     S.assets && !ro ? h('button', { class: 'media-tile upload-tile', onclick: () => fileIn.click() }, '+ Upload') : null, fileIn);
 
   const previewMedia = (p.mediaKind === 'video' && p.assetId) ? h('video', { class: 'preview-video', src: blob(p.assetId), controls: true, muted: true, playsinline: true }) : canvas;
-  const capText = D.pv === 'google' ? (p.gbpCaption || p.caption || '') : (p.caption || '');
   const preview = h('div', { class: 'preview-card' },
     h('div', { class: 'pv-tabs', role: 'tablist' },
       ['feed', 'google'].map(k => h('button', { class: 'pv-tab', role: 'tab', 'aria-selected': String(D.pv === k), onclick: () => { D.pv = k; renderDrawer(); } }, k === 'feed' ? 'Facebook / Instagram' : 'Google Business'))),
     h('div', { class: 'preview-top' },
-      h('span', { class: 'avatar', style: c.logoAssetId ? { backgroundImage: `url(${blob(c.logoAssetId)})`, backgroundColor: '#fff' } : { background: c.color || 'var(--navy)' } }, c.logoAssetId ? '' : (c.short || '').slice(0, 3)),
-      h('div', null, h('b', { text: c.name || 'Choose a community' }), h('div', { class: 'small muted', text: `${fmtShort(p.date)} · ${p.time || ''}` }))),
+      h('span', { class: 'avatar', style: c.logoAssetId ? { backgroundImage: `url(${blob(c.logoAssetId)})`, backgroundColor: '#fff', backgroundSize: '82% auto', backgroundRepeat: 'no-repeat', boxShadow: 'inset 0 0 0 1px var(--line)' } : { background: c.color || 'var(--navy)' } }, c.logoAssetId ? '' : (c.short || '').slice(0, 3)),
+      h('div', null, h('b', { text: c.name || 'Choose a community' }), h('div', { class: 'small muted', text: `${fmtShort(p.date)} · ${fmtTime(p.time)} · ${FORMATS[fmt].label}` }))),
     previewMedia,
-    h('div', { class: 'preview-text' }, capText, D.pv === 'feed' && p.hashtags ? h('span', { class: 'tags', text: '\n\n' + p.hashtags }) : null));
+    h('div', { class: 'preview-text' }, previewText(p, D.pv)));
 
   const statusLine = p.status === 'approved' ? h('div', { class: 'check ok' }, h('span', { text: '✓' }), h('span', null, h('b', { text: 'Approved' }), p.approvedAt ? ` ${new Date(p.approvedAt).toLocaleString()}` : '', '. Editing returns it to draft.'))
     : p.status === 'held' ? h('div', { class: 'check bad' }, h('span', { text: '!' }), h('span', null, h('b', { text: 'Held by publisher. ' }), p.error || 'The website changed since approval.'))
@@ -906,7 +954,13 @@ function renderDrawer() {
     h('div', { class: 'field' }, h('label', { for: 'pe-title', text: 'Calendar title' }), h('input', { type: 'text', id: 'pe-title', value: p.title || '', disabled: ro, oninput: e => set('title', e.target.value) })),
     h('div', { class: 'field' }, h('label', { for: 'pe-cap', text: 'Caption (Facebook & Instagram)' }),
       h('textarea', { id: 'pe-cap', rows: 7, disabled: ro, oninput: e => { p.caption = e.target.value; updCount(); schedulePreview(); } }, p.caption || ''), capCount),
-    h('div', { class: 'field' }, h('label', { for: 'pe-tags', text: 'Hashtags (Instagram & Facebook)' }), h('input', { type: 'text', id: 'pe-tags', value: p.hashtags || '', disabled: ro, oninput: e => { p.hashtags = e.target.value; updCount(); schedulePreview(); } })),
+    h('div', { class: 'field' }, h('label', { for: 'pe-tags', text: 'Hashtags (Instagram & Facebook)' }), h('input', { type: 'text', id: 'pe-tags', value: p.hashtags || '', disabled: ro, oninput: e => { p.hashtags = e.target.value; updCount(); schedulePreview(); } }),
+      c.hashtagSet ? h('span', { class: 'hint' }, 'Community set: ' + c.hashtagSet + ' ', ro ? null : h('button', { class: 'btn ghost', style: { padding: '2px 8px', fontSize: '12px' }, onclick: () => { p.hashtags = mergeTags(c.hashtagSet, p.hashtags); renderDrawer(); } }, 'Add set')) : h('span', { class: 'hint', text: 'Save a hashtag set on the Communities tab to reuse it on every post.' })),
+    h('div', { class: 'field' }, h('label', { for: 'pe-link', text: 'Link (Facebook post and Google “Learn more” button)' }),
+      h('select', { id: 'pe-link', disabled: ro, onchange: e => { p.linkKey = e.target.value; renderDrawer(); } },
+        h('option', { value: '', selected: linkKeyFor(p) === '' }, 'No link'),
+        Object.entries(LINKS).map(([k2, l]) => h('option', { value: k2, selected: linkKeyFor(p) === k2 }, l + (c.links?.[k2] ? '' : ' (not saved yet)')))),
+      linkFor(p) ? h('span', { class: 'hint src', text: linkFor(p) }) : null),
     p.platforms?.google ? h('div', { class: 'field' }, h('label', { for: 'pe-gbp', text: 'Google Business caption (optional)' }),
       h('textarea', { id: 'pe-gbp', rows: 4, disabled: ro, placeholder: 'Leave blank to reuse the main caption. Google ignores hashtags.', oninput: e => set('gbpCaption', e.target.value) }, p.gbpCaption || '')) : null,
     S.sample && !ro ? h('div', { class: 'field' }, h('label', { for: 'pe-rewrite', text: 'Rewrite with Claude' }),
@@ -931,7 +985,7 @@ function renderDrawer() {
     } else if (D.id) foot.append(h('button', { class: 'btn ghost danger', onclick: () => { D.confirmDelete = true; renderDrawer(); } }, 'Delete'));
     foot.append(h('span', { class: 'spacer' }));
     foot.append(h('button', { class: 'btn', onclick: () => saveDraft(false) }, D.id ? 'Save' : 'Save draft'));
-    if (p.status === 'approved') foot.append(h('button', { class: 'btn', onclick: async () => { await S.db.doc('posts/' + D.id).update({ status: 'draft', approvedAt: null, finalAssetId: null, updatedAt: stamp() }); p.status = 'draft'; toast('Moved back to draft.'); renderDrawer(); } }, 'Unapprove'));
+    if (p.status === 'approved') foot.append(h('button', { class: 'btn', onclick: async () => { await S.db.doc('posts/' + D.id).update({ status: 'draft', approvedAt: null, finalAssetId: null, finalGoogleAssetId: null, updatedAt: stamp() }); p.status = 'draft'; toast('Moved back to draft.'); renderDrawer(); } }, 'Unapprove'));
     else if (['draft', 'held', 'failed'].includes(p.status)) foot.append(h('button', { class: 'btn beam', disabled: !!r.blockers.length, title: r.blockers[0] || '', onclick: () => saveDraft(true) }, 'Save & approve'));
   } else foot.append(h('span', { class: 'small muted', text: 'You can view this post but not change it.' }));
 
@@ -946,26 +1000,35 @@ function renderDrawer() {
       foot));
   document.body.append(drawerEl);
   drawerEl.querySelector('.drawer-body').scrollTop = keepScroll;
-  drawComposite(canvas, p).catch(e => console.warn(e));
+  drawComposite(canvas, p, fmt).catch(e => console.warn(e));
   function schedulePreview() {
     clearTimeout(previewTimer);
     previewTimer = setTimeout(() => {
       if (!S.drawer) return;
-      const cv = drawerEl?.querySelector('canvas.preview-canvas'); if (cv) drawComposite(cv, p).catch(() => {});
+      const cv = drawerEl?.querySelector('canvas.preview-canvas'); if (cv) drawComposite(cv, p, fmt).catch(() => {});
       const pt = drawerEl?.querySelector('.preview-text');
-      if (pt) { pt.replaceChildren(D.pv === 'google' ? (p.gbpCaption || p.caption || '') : (p.caption || '')); if (D.pv === 'feed' && p.hashtags) pt.append(h('span', { class: 'tags', text: '\n\n' + p.hashtags })); }
+      if (pt) pt.replaceChildren(...previewText(p, D.pv));
     }, 250);
   }
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.drawer && !document.querySelector('.modal')) closeDrawer(); });
 
+function previewText(p, pv) {
+  const link = linkFor(p);
+  if (pv === 'google') return [p.gbpCaption || p.caption || '', link ? h('div', { class: 'cta' }, h('span', { class: 'cta-btn', text: 'Learn more' }), h('span', { class: 'src', text: link })) : ''];
+  return [p.caption || '',
+    p.platforms?.facebook && link ? h('span', { class: 'tags', text: '\n\n' + link }) : '',
+    p.hashtags ? h('span', { class: 'tags', text: '\n\n' + p.hashtags }) : '',
+    p.platforms?.facebook && link ? h('div', { class: 'hint', text: 'Facebook shows the link. Instagram captions can’t hold links, so Instagram gets the caption and hashtags only.' }) : ''];
+}
 async function saveDraft(andApprove) {
   const D = S.drawer; if (!D) return;
   const p = D.draft;
   if (!p.communityId) { toast('Choose a community first.', true); return; }
   const orig = D.id ? S.posts[D.id] : null;
-  const contentChanged = orig && JSON.stringify({ ...orig, status: 0, approvedAt: 0, finalAssetId: 0, updatedAt: 0 }) !== JSON.stringify({ ...p, status: 0, approvedAt: 0, finalAssetId: 0, updatedAt: 0 });
-  if (orig && orig.status === 'approved' && contentChanged) { p.status = 'draft'; p.approvedAt = null; p.finalAssetId = null; }
+  const strip = x => JSON.stringify({ ...x, status: 0, approvedAt: 0, finalAssetId: 0, finalGoogleAssetId: 0, updatedAt: 0 });
+  const contentChanged = orig && strip(orig) !== strip(p);
+  if (orig && orig.status === 'approved' && contentChanged) { p.status = 'draft'; p.approvedAt = null; p.finalAssetId = null; p.finalGoogleAssetId = null; }
   try {
     const id = await savePost(D.id, p);
     D.id = id;
@@ -1023,7 +1086,8 @@ const RULES = `RULES:
 - Facts: use only facts listed above. If a post needs a fact that is not on file (a specific amenity, a floor plan's details, a price, a special), do not invent it. Set "needsData" to a short note naming exactly what is missing and still write a caption with a clear [bracketed placeholder] for the missing fact.
 - No prices unless they appear in CURRENT SPECIALS.
 - Captions: 40–120 words, 1–2 emoji at most, end with a soft call to action (e.g. "Schedule a tour at the link in bio" for Instagram-style copy, or "Call or stop by the leasing office").
-- Hashtags: 3–6, include a location tag.`;
+- Hashtags: the community's saved set is added automatically; suggest only 1–2 tags specific to the post.
+- Links: Facebook and Google posts get the community's tracked website link automatically. Do not put URLs in captions.`;
 
 async function openGenerate() {
   const opts = commList();
@@ -1073,7 +1137,7 @@ ${keep.map(([, p]) => `- ${p.date} ${p.type}: ${p.title}`).join('\n') || '(none)
 ${RULES}
 
 Reply with only a JSON array. Each item:
-{"date":"YYYY-MM-DD","time":"HH:MM","type":"amenity|floorplan|holiday|funday|video|special","title":"short calendar title","caption":"...","hashtags":"#a #b","overlayLabel":"2-4 word graphic headline for holiday/funday/special posts, else empty","platforms":{"facebook":true,"instagram":true,"google":false},"needsData":"empty string or what is missing"}
+{"date":"YYYY-MM-DD","type":"amenity|floorplan|holiday|funday|video|special","title":"short calendar title","caption":"...","postTags":"1-2 hashtags specific to this post, e.g. #FloorPlanFriday","overlayLabel":"2-4 word graphic headline for holiday/funday/special posts, else empty","platforms":{"facebook":true,"instagram":true,"google":false},"needsData":"empty string or what is missing"}
 Set google true for amenity, floorplan and special posts only.`;
   const out = await S.sample.json(prompt, { modelTier: 'default' });
   if (!Array.isArray(out)) throw new Error('bad shape');
@@ -1083,8 +1147,8 @@ Set google true for amenity, floorplan and special posts only.`;
     if (!it || typeof it.date !== 'string' || !it.date.startsWith(S.ym) || !/^\d{4}-\d{2}-\d{2}$/.test(it.date)) continue;
     const type = TYPES[it.type] ? it.type : 'other';
     await S.db.collection('posts').add({
-      communityId: cid, date: it.date, time: /^\d{2}:\d{2}$/.test(it.time || '') ? it.time : (S.settings?.defaultTime || '10:00'), type,
-      title: String(it.title || '').slice(0, 80), caption: String(it.caption || ''), gbpCaption: '', hashtags: String(it.hashtags || ''),
+      communityId: cid, date: it.date, time: slotFor(cid, it.date), type, linkKey: LINK_FOR_TYPE[type] || 'home',
+      title: String(it.title || '').slice(0, 80), caption: String(it.caption || ''), gbpCaption: '', hashtags: mergeTags(c.hashtagSet, String(it.postTags || it.hashtags || '').split(/\s+/).slice(0, 2).join(' ')),
       platforms: { facebook: it.platforms?.facebook !== false, instagram: it.platforms?.instagram !== false, google: !!it.platforms?.google },
       assetId: null, mediaKind: null, overlay: { corner: c.defaultCorner || 'tr', label: String(it.overlayLabel || '') },
       status: 'draft', needsData: String(it.needsData || ''), createdBy: 'claude', updatedAt: stamp() });
@@ -1106,13 +1170,13 @@ POST TYPE: ${(TYPES[p.type] || TYPES.other).label}
 DATE: ${p.date}
 CURRENT CAPTION:
 ${p.caption || '(empty)'}
-CURRENT HASHTAGS: ${p.hashtags || '(none)'}
+COMMUNITY HASHTAG SET (kept as is): ${c.hashtagSet || '(none)'}
 INSTRUCTION FROM THE MARKETER: ${instr || 'Improve it.'}
 
 ${RULES}
 
-Reply with only JSON: {"caption":"...","hashtags":"#a #b","needsData":"empty or what is missing"}`, { modelTier: 'default', cache: false });
-    if (out && typeof out.caption === 'string') { p.caption = out.caption; if (typeof out.hashtags === 'string') p.hashtags = out.hashtags; p.needsData = String(out.needsData || ''); }
+Reply with only JSON: {"caption":"...","postTags":"1-2 hashtags specific to this post","needsData":"empty or what is missing"}`, { modelTier: 'default', cache: false });
+    if (out && typeof out.caption === 'string') { p.caption = out.caption; if (typeof out.postTags === 'string') p.hashtags = mergeTags(c.hashtagSet, out.postTags.split(/\s+/).slice(0, 2).join(' ')); p.needsData = String(out.needsData || ''); }
   } catch (e) { console.warn(e); toast(e.code === 'not_granted' ? 'Claude access was not allowed for this page.' : 'Could not rewrite. Try again.', true); }
   if (S.drawer === D) { D.rewriting = false; renderDrawer(); }
 }
@@ -1154,7 +1218,7 @@ function renderCommunities(main) {
   main.append(h('div', { class: 'split' },
     h('section', { class: 'panel' },
       h('div', { class: 'toolbar' },
-        h('span', { class: 'avatar', style: c.logoAssetId ? { backgroundImage: `url(${blob(c.logoAssetId)})`, backgroundColor: '#fff' } : { background: c.color || 'var(--navy)' } }, c.logoAssetId ? '' : (c.short || '')),
+        h('span', { class: 'avatar', style: c.logoAssetId ? { backgroundImage: `url(${blob(c.logoAssetId)})`, backgroundColor: '#fff', backgroundSize: '82% auto', backgroundRepeat: 'no-repeat', boxShadow: 'inset 0 0 0 1px var(--line)' } : { background: c.color || 'var(--navy)' } }, c.logoAssetId ? '' : (c.short || '')),
         h('h2', { text: c.name || 'Untitled community' })),
       h('div', { class: 'harvest' },
         h('span', { class: 'state ' + hvState[0], text: hvState[1] }),
@@ -1167,6 +1231,14 @@ function renderCommunities(main) {
       h('div', { class: 'row' }, fld('City', 'city'), h('div', { class: 'field', style: { flex: '0 0 90px' } }, h('label', { for: 'c-state', text: 'State' }), h('input', { type: 'text', id: 'c-state', value: c.state || '', disabled: ro, oninput: e => { c.state = e.target.value; } })),
         h('div', { class: 'field', style: { flex: '0 0 80px' } }, h('label', { for: 'c-color', text: 'Color' }), h('input', { type: 'color', class: 'swatch', id: 'c-color', value: c.color || BRAND.blue, disabled: ro, oninput: e => { c.color = e.target.value; } }))),
       h('div', { class: 'row' }, fld('Phone', 'phone'), fld('Address', 'address')),
+      h('div', { class: 'field' }, h('label', { for: 'c-hashtagSet', text: 'Hashtag set' }),
+        h('input', { type: 'text', id: 'c-hashtagSet', value: c.hashtagSet || '', disabled: ro, placeholder: '#CommunityName #City #MichiganLiving', oninput: e => { c.hashtagSet = e.target.value; } }),
+        h('span', { class: 'hint', text: 'Added to every post for this community, plus 1–2 tags chosen for each post.' })),
+      h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Tracking links' }),
+        h('span', { class: 'hint', text: 'Paste the tracked URL for each page. Posts link to the page that matches their type: amenity → Amenities, floor plan → Floor plans, video → Schedule a tour, everything else → Home page.' }),
+        h('div', { class: 'stack', style: { gap: '8px' } }, Object.entries(LINKS).map(([k2, l]) => h('div', { class: 'link-row' },
+          h('label', { for: 'c-link-' + k2, text: l }),
+          h('input', { type: 'url', id: 'c-link-' + k2, value: c.links?.[k2] || '', disabled: ro, placeholder: 'https://…?utm_source=…', oninput: e => { c.links = { ...(c.links || {}), [k2]: e.target.value.trim() }; } }))))),
       h('div', { class: 'field' }, h('label', { for: 'c-audience', text: 'Audience notes (sets tone only)' }),
         h('textarea', { id: 'c-audience', rows: 3, disabled: ro, oninput: e => { c.audience = e.target.value; } }, c.audience || ''),
         h('span', { class: 'hint', text: 'Used to pick tone and topics. Posts never say who should live here.' })),
@@ -1227,7 +1299,9 @@ function renderSettings(main) {
       h('div', { class: 'field' }, h('label', { for: 's-voice', text: 'Company voice' }), h('textarea', { id: 's-voice', rows: 4, disabled: ro, oninput: e => { st.voice = e.target.value; } }, st.voice || '')),
       h('div', { class: 'row' },
         h('div', { class: 'field' }, h('label', { for: 's-cad', text: 'Posts per week' }), h('input', { type: 'text', id: 's-cad', value: st.cadence || '3-4', disabled: ro, oninput: e => { st.cadence = e.target.value; } })),
-        h('div', { class: 'field' }, h('label', { for: 's-time', text: 'Default post time' }), h('input', { type: 'time', id: 's-time', value: st.defaultTime || '10:00', disabled: ro, oninput: e => { st.defaultTime = e.target.value; } }))),
+        h('div', { class: 'field' }, h('label', { for: 's-slots', text: 'Posting times (rotated across communities)' }),
+          h('input', { type: 'text', id: 's-slots', value: (st.timeSlots || DEFAULT_SLOTS).join(', '), disabled: ro, oninput: e => { st.timeSlots = e.target.value.split(',').map(x => x.trim()).filter(x => /^\d{2}:\d{2}$/.test(x)); } }),
+          h('span', { class: 'hint', text: '24-hour times, comma separated. Each community and day gets the next time in the list so pages don’t all post at once.' }))),
       h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Content mix' }), h('div', { class: 'stack', style: { gap: '6px' } }, mixRows)),
       h('label', { class: 'checks' }, h('input', { type: 'checkbox', id: 's-eho', checked: st.eho !== false, disabled: ro, onchange: e => { st.eho = e.target.checked; } }), 'Add “Equal Housing Opportunity” to every image'),
       h('div', { class: 'field' }, h('label', { for: 's-extra', text: 'Extra phrases to flag (one per line)' }),
