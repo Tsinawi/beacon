@@ -1,0 +1,1227 @@
+<title>Beacon Social Command Center</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: app shell — slim header, community rail on the left, month calendar as the working surface, post editor slides in from the right. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --surface-2: #e9edf3;
+  --line: #d3dae4;
+  --fg: #142235;
+  --muted: #5a6a80;
+  --navy: #14365c;
+  --beam: #e8a317;
+  --beam-ink: #3d2800;
+  --focus: #2f6fd6;
+
+  --t-amenity: #1f8a7a;
+  --t-floorplan: #4a5bd4;
+  --t-holiday: #c2413a;
+  --t-funday: #c77c06;
+  --t-video: #8a44c4;
+  --t-special: #2e8a3e;
+  --t-other: #6b7789;
+
+  --ok: #1e7f45;
+  --ok-bg: #e2f4e8;
+  --warn: #9a5b00;
+  --warn-bg: #fdf0d6;
+  --bad: #b3261e;
+  --bad-bg: #fbe3e1;
+
+  --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", Roboto, Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --r: 8px;
+  --shadow: 0 10px 30px rgba(15, 30, 55, .18);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1520; --surface: #152131; --surface-2: #1c2b3e; --line: #2a3b52;
+    --fg: #e6edf6; --muted: #93a3b8; --navy: #8fb7e8; --beam: #f2b632; --beam-ink: #2a1c00; --focus: #7aa8f0;
+    --t-amenity: #4cc2ae; --t-floorplan: #8b98f2; --t-holiday: #ef7a72; --t-funday: #f0a83a; --t-video: #bf8bea; --t-special: #6cc77a; --t-other: #98a4b5;
+    --ok: #6fd193; --ok-bg: #173527; --warn: #f2bd5c; --warn-bg: #3a2c12; --bad: #f28b82; --bad-bg: #3d1c1a;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1520; --surface: #152131; --surface-2: #1c2b3e; --line: #2a3b52;
+  --fg: #e6edf6; --muted: #93a3b8; --navy: #8fb7e8; --beam: #f2b632; --beam-ink: #2a1c00; --focus: #7aa8f0;
+  --t-amenity: #4cc2ae; --t-floorplan: #8b98f2; --t-holiday: #ef7a72; --t-funday: #f0a83a; --t-video: #bf8bea; --t-special: #6cc77a; --t-other: #98a4b5;
+  --ok: #6fd193; --ok-bg: #173527; --warn: #f2bd5c; --warn-bg: #3a2c12; --bad: #f28b82; --bad-bg: #3d1c1a;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.eyebrow { font-family: var(--f-display); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Header */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--navy); }
+.app-header {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9;
+  background: var(--navy); color: #fff;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 10px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+:root:not([data-theme="light"]) .app-header { }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .app-header { background: #0a1a2e; } :root:not([data-theme="light"]) body::before { background: #0a1a2e; } }
+:root[data-theme="dark"] .app-header, :root[data-theme="dark"] body::before { background: #0a1a2e; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-mark { width: 28px; height: 28px; flex: none; }
+.brand-name { font-family: var(--f-display); font-weight: 800; font-size: 17px; letter-spacing: -.01em; white-space: nowrap; }
+.brand-sub { font-size: 12px; opacity: .75; white-space: nowrap; }
+.tabs { display: flex; gap: 4px; margin-left: auto; }
+.tab {
+  background: transparent; border: 0; color: #fff; opacity: .78; cursor: pointer;
+  padding: 7px 12px; border-radius: 6px; font-family: var(--f-display); font-weight: 700; font-size: 14px;
+}
+.tab:hover { opacity: 1; background: rgba(255,255,255,.08); }
+.tab[aria-selected="true"] { opacity: 1; background: rgba(255,255,255,.14); box-shadow: inset 0 -2px 0 var(--beam); }
+
+/* Shell */
+.shell {
+  display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 20px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 40px;
+  max-width: 1500px; margin: 0 auto;
+}
+@media (max-width: 900px) { .shell { grid-template-columns: minmax(0, 1fr); } }
+
+/* Rail */
+.rail { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.rail-list { display: flex; flex-direction: column; gap: 2px; }
+.rail-item {
+  display: grid; grid-template-columns: 10px minmax(0,1fr) auto; align-items: center; gap: 10px;
+  width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--r);
+  padding: 8px 10px; cursor: pointer;
+}
+.rail-item:hover { background: var(--surface-2); }
+.rail-item[aria-current="true"] { background: var(--surface); border-color: var(--line); }
+.rail-dot { width: 10px; height: 10px; border-radius: 3px; background: var(--muted); }
+.rail-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-meta { font-size: 12px; color: var(--muted); }
+.rail-count { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.rail-count .attn { color: var(--warn); font-weight: 600; }
+.rail-select { display: none; }
+@media (max-width: 900px) {
+  .rail-list { display: none; }
+  .rail-select { display: block; width: 100%; padding: 10px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); }
+}
+
+/* Toolbar */
+.main { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.month-nav { display: flex; align-items: center; gap: 6px; }
+.month-title { font-family: var(--f-display); font-weight: 800; font-size: 24px; letter-spacing: -.02em; min-width: 9ch; }
+.spacer { flex: 1; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; justify-content: center;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 7px;
+  padding: 7px 12px; cursor: pointer; font-weight: 700; font-size: 14px; white-space: nowrap;
+}
+.btn:hover { border-color: var(--muted); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.icon { padding: 7px 10px; }
+.btn.primary { background: var(--navy); border-color: var(--navy); color: #fff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #0b1a2c; } }
+:root[data-theme="dark"] .btn.primary { color: #0b1a2c; }
+.btn.beam { background: var(--beam); border-color: var(--beam); color: var(--beam-ink); }
+.btn.danger { color: var(--bad); }
+.btn.ghost { background: transparent; border-color: transparent; }
+.btn.ghost:hover { background: var(--surface-2); }
+
+.summary { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 700; background: var(--surface-2); color: var(--fg); border: 1px solid transparent;
+}
+.pill .n { font-family: var(--f-mono); }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.tdot { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; }
+
+/* Calendar */
+.cal { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.cal-head, .cal-week { display: grid; grid-template-columns: 74px repeat(7, minmax(0, 1fr)); }
+.cal-head div { padding: 8px 10px; font-family: var(--f-display); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
+.cal-week + .cal-week { border-top: 1px solid var(--line); }
+.week-gutter { border-right: 1px solid var(--line); padding: 8px 6px; display: flex; flex-direction: column; gap: 6px; align-items: stretch; background: var(--surface-2); }
+.week-gutter .wk { font-family: var(--f-mono); font-size: 11px; color: var(--muted); text-align: center; }
+.week-gutter .btn { padding: 5px 4px; font-size: 11.5px; }
+.week-done { font-size: 11px; color: var(--ok); text-align: center; font-weight: 700; }
+.cal-day { min-height: 128px; padding: 6px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cal-day:nth-child(2) { border-left: 0; }
+.cal-day.out { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--surface-2) 6px 7px); }
+.cal-day.out .dnum { opacity: .45; }
+.dnum { display: flex; justify-content: space-between; align-items: center; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.cal-day.today .dnum b { background: var(--beam); color: var(--beam-ink); border-radius: 4px; padding: 0 5px; }
+.add-day { opacity: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px; border-radius: 4px; }
+.cal-day:hover .add-day, .add-day:focus-visible { opacity: 1; }
+.add-day:hover { background: var(--surface-2); color: var(--fg); }
+
+.chip {
+  display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 6px; align-items: center;
+  border: 1px solid var(--line); border-left: 3px solid var(--tc, var(--t-other));
+  background: var(--surface); border-radius: 6px; padding: 3px 5px 3px 3px; cursor: pointer; text-align: left; width: 100%;
+}
+.chip:hover { border-color: var(--muted); border-left-color: var(--tc); }
+.chip .thumb { width: 30px; height: 30px; border-radius: 4px; background: var(--surface-2); background-size: cover; background-position: center; position: relative; overflow: hidden; }
+.chip .thumb.gfx { background: var(--tc); }
+.chip .thumb.gfx::after { content: ""; position: absolute; inset: 7px; border: 2px solid rgba(255,255,255,.8); border-radius: 50%; }
+.chip .thumb.missing { background: repeating-linear-gradient(45deg, var(--surface-2) 0 4px, transparent 4px 8px); border: 1px dashed var(--line); }
+.chip .ct { min-width: 0; }
+.chip .ctitle { font-size: 12.5px; font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip .cmeta { font-size: 11px; color: var(--muted); display: flex; gap: 4px; align-items: center; white-space: nowrap; overflow: hidden; }
+.chip.needs { border-style: dashed; border-left-style: solid; background: var(--warn-bg); }
+.chip.approved .ctitle::before { content: "✓ "; color: var(--ok); }
+.chip.posted { opacity: .7; }
+.chip.held, .chip.failed { background: var(--bad-bg); }
+.st { font-weight: 700; }
+.st.approved { color: var(--ok); } .st.needs { color: var(--warn); } .st.held, .st.failed { color: var(--bad); }
+
+/* Agenda (narrow) */
+.agenda { display: flex; flex-direction: column; gap: 14px; }
+.ag-week { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.ag-week-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.ag-day { display: grid; grid-template-columns: 54px minmax(0,1fr); gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.ag-day:first-of-type { border-top: 0; }
+.ag-date { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.ag-date b { display: block; font-size: 18px; color: var(--fg); }
+.ag-list { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ag-list .chip { grid-template-columns: 44px minmax(0,1fr); }
+.ag-list .chip .thumb { width: 44px; height: 44px; }
+
+/* Empty state */
+.empty { border: 1px dashed var(--line); border-radius: 10px; padding: 28px 20px; text-align: center; color: var(--muted); background: var(--surface); }
+.empty h3 { color: var(--fg); margin-bottom: 6px; font-size: 18px; }
+
+/* Drawer */
+.scrim { position: fixed; inset: 0; background: rgba(8, 16, 28, .45); z-index: 20; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 21; width: min(980px, 100%);
+  background: var(--bg); box-shadow: var(--shadow); display: flex; flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px);
+}
+.drawer-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.drawer-head h2 { font-size: 18px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-body { flex: 1; overflow: auto; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; padding: 16px; align-content: start; }
+@media (max-width: 760px) { .drawer-body { grid-template-columns: minmax(0,1fr); } }
+.drawer-foot { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--surface); align-items: center; }
+
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > label, .field > .lbl { font-family: var(--f-display); font-weight: 700; font-size: 12.5px; color: var(--muted); }
+.field input[type=text], .field input[type=date], .field input[type=time], .field input[type=url], .field input[type=number], .field select, .field textarea {
+  width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 8px 10px;
+}
+.field textarea { resize: vertical; min-height: 90px; line-height: 1.45; }
+.field .hint { font-size: 12px; color: var(--muted); }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.row > .field { flex: 1 1 140px; }
+.stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.checks { display: flex; gap: 14px; flex-wrap: wrap; }
+.checks label { display: inline-flex; gap: 6px; align-items: center; font-weight: 700; font-size: 14px; color: var(--fg); }
+.counter { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); text-align: right; }
+.counter.over { color: var(--bad); font-weight: 600; }
+
+.preview-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.preview-top { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--f-display); font-weight: 800; font-size: 13px; flex: none; background-size: cover; background-position: center; }
+.preview-canvas { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; background: var(--surface-2); }
+.preview-video { width: 100%; aspect-ratio: 1/1; background: #000; display: block; }
+.preview-text { padding: 10px 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
+.preview-text .tags { color: var(--focus); }
+.pv-tabs { display: flex; gap: 4px; padding: 8px 12px 0; }
+.pv-tab { border: 0; background: transparent; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12.5px; color: var(--muted); }
+.pv-tab[aria-selected="true"] { background: var(--surface-2); color: var(--fg); }
+
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.media-tile { position: relative; aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; border: 2px solid transparent; cursor: pointer; padding: 0; background: var(--surface-2); background-size: cover; background-position: center; }
+.media-tile[aria-pressed="true"] { border-color: var(--beam); }
+.media-tile .vid { position: absolute; inset: auto 4px 4px auto; background: rgba(0,0,0,.65); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-weight: 700; }
+.media-tile.none { display: grid; place-items: center; font-size: 11px; color: var(--muted); font-weight: 700; text-align: center; padding: 4px; }
+.upload-tile { border: 1px dashed var(--line); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--muted); }
+
+.checklist { display: flex; flex-direction: column; gap: 6px; }
+.check { display: grid; grid-template-columns: 18px minmax(0,1fr); gap: 8px; font-size: 13.5px; padding: 7px 10px; border-radius: 7px; }
+.check.ok { background: var(--ok-bg); color: var(--ok); }
+.check.warn { background: var(--warn-bg); color: var(--warn); }
+.check.bad { background: var(--bad-bg); color: var(--bad); }
+.check b { font-weight: 700; }
+
+.callout { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 12px 14px; }
+.callout.warn { background: var(--warn-bg); border-color: transparent; color: var(--warn); }
+.callout.warn b { color: inherit; }
+
+/* Communities & settings */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.panel h2 { font-size: 20px; }
+.panel h3 { font-size: 15px; }
+.split { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; }
+@media (max-width: 1100px) { .split { grid-template-columns: minmax(0,1fr); } }
+.harvest { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border-radius: 8px; background: var(--surface-2); font-size: 13.5px; }
+.harvest .state { font-weight: 700; }
+.harvest .state.bad { color: var(--bad); } .harvest .state.ok { color: var(--ok); } .harvest .state.warn { color: var(--warn); }
+.src { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+.swatch { width: 38px; height: 38px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: none; cursor: pointer; }
+.mix-row { display: grid; grid-template-columns: 110px minmax(0,1fr) 40px; gap: 10px; align-items: center; }
+.mix-row input[type=range] { width: 100%; accent-color: var(--navy); }
+.steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.status-line { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.status-line .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.status-line .dot.bad { background: var(--bad); } .status-line .dot.warn { background: var(--beam); } .status-line .dot.ok { background: var(--ok); }
+
+/* Modal & toast */
+.modal { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px; background: rgba(8, 16, 28, .5); }
+.modal-box { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); width: min(520px, 100%); max-height: 90vh; overflow: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.modal-box h2 { font-size: 19px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.toasts { position: fixed; z-index: 40; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 8px; align-items: center; width: min(560px, calc(100% - 32px)); pointer-events: none; }
+.toast { background: var(--fg); color: var(--bg); padding: 10px 14px; border-radius: 8px; font-size: 14px; box-shadow: var(--shadow); pointer-events: auto; }
+.toast.bad { background: var(--bad); color: #fff; }
+.progress { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.progress > div { height: 100%; background: var(--beam); width: 0; transition: width .2s; }
+
+.notice { padding: 10px 14px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="app-header">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M16 3 L20 9 L12 9 Z" fill="#e8a317"/>
+      <path d="M13 10 h6 l2 19 h-10 z" fill="#ffffff"/>
+      <rect x="12.5" y="15" width="7" height="2.5" fill="#14365c"/>
+      <rect x="12" y="21" width="8" height="2.5" fill="#14365c"/>
+      <path d="M21 6 L31 2 L31 10 Z M11 6 L1 2 L1 10 Z" fill="#e8a317" opacity=".55"/>
+    </svg>
+    <div>
+      <div class="brand-name">Beacon Social</div>
+      <div class="brand-sub">Beacon Management · command center</div>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tab-calendar" data-view="calendar" aria-selected="true">Calendar</button>
+    <button class="tab" role="tab" id="tab-communities" data-view="communities" aria-selected="false">Communities</button>
+    <button class="tab" role="tab" id="tab-settings" data-view="settings" aria-selected="false">Settings</button>
+  </nav>
+</header>
+
+<div class="shell">
+  <aside class="rail" aria-label="Communities">
+    <div class="eyebrow">Communities</div>
+    <select class="rail-select" id="rail-select" aria-label="Choose community"></select>
+    <div class="rail-list" id="rail-list"></div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- constants ----------
+const TYPES = {
+  amenity:   { label: 'Amenity',    tok: '--t-amenity' },
+  floorplan: { label: 'Floor plan', tok: '--t-floorplan' },
+  holiday:   { label: 'Holiday',    tok: '--t-holiday' },
+  funday:    { label: 'Fun day',    tok: '--t-funday' },
+  video:     { label: 'Video tour', tok: '--t-video' },
+  special:   { label: 'Special',    tok: '--t-special' },
+  other:     { label: 'Other',      tok: '--t-other' },
+};
+const PLATFORMS = { facebook: 'Facebook', instagram: 'Instagram', google: 'Google' };
+const LIMITS = { instagram: 2200, facebook: 5000, google: 1500 };
+const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// Advisory fair-housing phrase list. Flags for review; not legal advice.
+const FH_RULES = [
+  { re: /\bfamil(y|ies)[- ]?(friendly|oriented)?\b/i, why: 'Familial status is protected. Describe the property, not who should live there.' },
+  { re: /\b(kids?|children|child)\b/i, why: 'References to children can imply familial-status preference.' },
+  { re: /\b(adults? only|adult community|no kids|mature (residents|adults|individuals))\b/i, why: 'Excludes families with children.' },
+  { re: /\b(empty[- ]nesters?|singles?|couples?|bachelors?|newlyweds?)\b/i, why: 'Describes a type of household. Describe amenities instead.' },
+  { re: /\b(young professionals?|millennials?|retirees?|seniors?|elderly|students?)\b/i, why: 'Targets an age group or household type.' },
+  { re: /\b(perfect|ideal|great) for (you and )?(your )?\w+/i, why: '"Perfect for ___" phrasing often implies who should live there. Check the noun.' },
+  { re: /\b(exclusive|private community|restricted|integrated|ethnic|traditional neighborhood)\b/i, why: 'Can signal exclusion of protected classes.' },
+  { re: /\b(safe|secure|crime[- ]free|low[- ]crime) (neighborhood|area|community)\b/i, why: 'Safety claims can be coded and are hard to substantiate. Describe specific features (e.g., controlled-access entry).' },
+  { re: /\b(christian|church|synagogue|mosque|temple)\b/i, why: 'Religious references can imply religious preference.' },
+  { re: /\b(able[- ]bodied|handicapped|wheelchair[- ]bound|healthy|mentally)\b/i, why: 'Disability-related language. Describe accessibility features instead.' },
+  { re: /\b(english[- ]speaking|english only|american)\b/i, why: 'National origin is protected.' },
+  { re: /\b(no section 8|no vouchers?|no housing assistance)\b/i, why: 'Source of income is protected in many Michigan jurisdictions.' },
+  { re: /\bmaster (bed(room)?|suite)\b/i, why: 'Not a violation, but many fair housing guides now recommend "primary bedroom".' },
+];
+
+// ---------- state ----------
+const today = new Date();
+const S = {
+  view: 'calendar',
+  community: 'all',
+  ym: initialMonth(),
+  communities: {},   // id -> data
+  posts: {},         // id -> data (current month)
+  media: {},         // id -> data
+  settings: null,
+  db: null, assets: null, sample: null, user: null,
+  canWrite: true,
+  loaded: { communities: false, posts: false, settings: false },
+  drawer: null,      // { id, draft, pv }
+  editCommunity: null,
+  narrow: matchMedia('(max-width: 760px)').matches,
+  busy: false,
+};
+const imgCache = new Map();
+let unsubPosts = null;
+
+function initialMonth() {
+  try { const v = localStorage.getItem('beacon.ym'); if (v && /^\d{4}-\d{2}$/.test(v)) return v; } catch (e) {}
+  // default: next month (planning ahead)
+  const d = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  return ymOf(d);
+}
+function ymOf(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function ds(d) { return ymOf(d) + '-' + String(d.getDate()).padStart(2, '0'); }
+function parseDs(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function mondayOf(d) { const x = new Date(d); const k = (x.getDay() + 6) % 7; x.setDate(x.getDate() - k); return x; }
+function monthBounds(ym) { const [y, m] = ym.split('-').map(Number); return { first: new Date(y, m - 1, 1), last: new Date(y, m, 0) }; }
+function fmtShort(s) { const d = parseDs(s); return DOW[(d.getDay()+6)%7] + ' ' + MONTHS[d.getMonth()].slice(0,3) + ' ' + d.getDate(); }
+
+// ---------- dom helpers ----------
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else if (k === 'text') el.textContent = v;
+    else if (k.startsWith('--')) el.style.setProperty(k, v);
+    else if (v === true) el.setAttribute(k, '');
+    else el.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) { if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  return el;
+}
+const $ = (s, r = document) => r.querySelector(s);
+function toast(msg, bad) {
+  const t = h('div', { class: 'toast' + (bad ? ' bad' : ''), role: 'status', text: msg });
+  $('#toasts').append(t);
+  setTimeout(() => t.remove(), bad ? 7000 : 4200);
+}
+function modal({ title, body, actions }) {
+  const close = () => m.remove();
+  const box = h('div', { class: 'modal-box', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+    h('h2', { text: title }), body,
+    h('div', { class: 'modal-actions' }, (actions || []).map(a => h('button', {
+      class: 'btn' + (a.primary ? ' primary' : '') + (a.danger ? ' danger' : ''),
+      onclick: async () => { if (a.onClick) { const keep = await a.onClick(close); if (keep === true) return; } close(); }
+    }, a.label))));
+  const m = h('div', { class: 'modal', onclick: e => { if (e.target === m) close(); } }, box);
+  document.body.append(m);
+  const first = box.querySelector('button.primary') || box.querySelector('button');
+  first && first.focus();
+  return close;
+}
+function typeColor(t) { return `var(${(TYPES[t] || TYPES.other).tok})`; }
+function comm(id) { return S.communities[id]; }
+function blob(id) { return '/_blob/' + id; }
+function lines(s) { return String(s || '').split('\n').map(x => x.trim()).filter(Boolean); }
+
+// ---------- readiness & compliance ----------
+function complianceHits(text) {
+  const hits = [];
+  for (const r of FH_RULES) { const m = String(text || '').match(r.re); if (m) hits.push({ phrase: m[0], why: r.why }); }
+  for (const p of (S.settings?.extraPhrases || [])) {
+    if (p && String(text || '').toLowerCase().includes(p.toLowerCase())) hits.push({ phrase: p, why: 'On your custom review list.' });
+  }
+  return hits;
+}
+function readiness(p) {
+  const blockers = [], warnings = [], ok = [];
+  if (p.needsData) blockers.push('Needs website info: ' + p.needsData);
+  if (!String(p.caption || '').trim()) blockers.push('Caption is empty.');
+  const plats = Object.keys(PLATFORMS).filter(k => p.platforms?.[k]);
+  if (!plats.length) blockers.push('Pick at least one platform.');
+  if (p.type === 'video' && !(p.assetId && p.mediaKind === 'video')) blockers.push('Upload or choose the walkthrough video.');
+  const cap = String(p.caption || '') + (p.hashtags ? '\n\n' + p.hashtags : '');
+  if (p.platforms?.instagram && cap.length > LIMITS.instagram) blockers.push(`Instagram caption is ${cap.length} characters; the limit is ${LIMITS.instagram}.`);
+  const tagCount = (String(p.hashtags || '').match(/#/g) || []).length;
+  if (p.platforms?.instagram && tagCount > 30) blockers.push('Instagram allows at most 30 hashtags.');
+  const g = String(p.gbpCaption || p.caption || '');
+  if (p.platforms?.google && g.length > LIMITS.google) blockers.push(`Google caption is ${g.length} characters; the limit is ${LIMITS.google}.`);
+  const hits = complianceHits([p.title, p.caption, p.gbpCaption, p.overlay?.label].join('\n'));
+  for (const x of hits) warnings.push(`Fair housing review: “${x.phrase}”. ${x.why}`);
+  if (!p.assetId && p.type !== 'video' && !['holiday','funday'].includes(p.type)) warnings.push('No photo chosen. A branded graphic will be used instead.');
+  if (!blockers.length && !warnings.length) ok.push('Ready to approve.');
+  return { blockers, warnings, ok };
+}
+
+// ---------- canvas composite ----------
+function loadImg(id) {
+  if (!imgCache.has(id)) imgCache.set(id, new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = blob(id); }));
+  return imgCache.get(id);
+}
+function shade(hex, amt) {
+  const n = parseInt(String(hex || '#14365c').replace('#',''), 16);
+  let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  r = Math.max(0, Math.min(255, r + amt)); g = Math.max(0, Math.min(255, g + amt)); b = Math.max(0, Math.min(255, b + amt));
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+function rr(ctx, x, y, w, hh, r) { ctx.beginPath(); ctx.moveTo(x+r, y); ctx.arcTo(x+w, y, x+w, y+hh, r); ctx.arcTo(x+w, y+hh, x, y+hh, r); ctx.arcTo(x, y+hh, x, y, r); ctx.arcTo(x, y, x+w, y, r); ctx.closePath(); }
+function wrapText(ctx, text, maxW) {
+  const words = String(text).split(/\s+/); const out = []; let line = '';
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; }
+  if (line) out.push(line); return out;
+}
+async function drawComposite(canvas, p) {
+  const SZ = 1080; canvas.width = SZ; canvas.height = SZ;
+  const ctx = canvas.getContext('2d');
+  const c = comm(p.communityId) || {};
+  const color = c.color || '#14365c';
+  try { await document.fonts.ready; } catch (e) {}
+  let photo = null;
+  if (p.assetId && p.mediaKind !== 'video') { try { photo = await loadImg(p.assetId); } catch (e) { photo = null; } }
+  if (photo) {
+    const s = Math.max(SZ / photo.naturalWidth, SZ / photo.naturalHeight);
+    const w = photo.naturalWidth * s, hh = photo.naturalHeight * s;
+    ctx.drawImage(photo, (SZ - w) / 2, (SZ - hh) / 2, w, hh);
+  } else {
+    const g = ctx.createLinearGradient(0, 0, SZ, SZ);
+    g.addColorStop(0, shade(color, 30)); g.addColorStop(1, shade(color, -45));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, SZ, SZ);
+    // beacon rays
+    ctx.save(); ctx.globalAlpha = .12; ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.moveTo(SZ*0.82, SZ*0.18); const a = -Math.PI*0.95 + i*0.13; ctx.lineTo(SZ*0.82 + Math.cos(a)*1600, SZ*0.18 + Math.sin(a)*1600); ctx.lineTo(SZ*0.82 + Math.cos(a+0.05)*1600, SZ*0.18 + Math.sin(a+0.05)*1600); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 3;
+    for (let r = 120; r < 900; r += 110) { ctx.beginPath(); ctx.arc(SZ*0.82, SZ*0.18, r, 0, Math.PI*2); ctx.stroke(); }
+    ctx.restore();
+  }
+  const label = String(p.overlay?.label || '').trim();
+  if (label) {
+    const g2 = ctx.createLinearGradient(0, SZ*0.45, 0, SZ);
+    g2.addColorStop(0, 'rgba(6,14,26,0)'); g2.addColorStop(1, 'rgba(6,14,26,.82)');
+    ctx.fillStyle = g2; ctx.fillRect(0, SZ*0.45, SZ, SZ*0.55);
+    ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '800 92px "Schibsted Grotesk", Arial, sans-serif';
+    const ls = wrapText(ctx, label, SZ - 140).slice(0, 3);
+    let y = SZ - 120 - (ls.length - 1) * 98;
+    ctx.fillStyle = '#e8a317'; ctx.fillRect(70, y - 120, 90, 10);
+    ctx.fillStyle = '#ffffff';
+    for (const l of ls) { ctx.fillText(l, 70, y); y += 98; }
+    ctx.font = '700 30px "Schibsted Grotesk", Arial, sans-serif'; ctx.globalAlpha = .9;
+    ctx.fillText(String(c.name || '').toUpperCase(), 72, SZ - 60); ctx.globalAlpha = 1;
+  }
+  // corner badge
+  const corner = p.overlay?.corner || c.defaultCorner || 'tr';
+  const bw = 132, bh = 132, m = 40, bx = corner === 'tl' ? m : SZ - m - bw, by = m;
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.28)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 6;
+  ctx.fillStyle = 'rgba(255,255,255,.95)'; rr(ctx, bx, by, bw, bh, 26); ctx.fill(); ctx.restore();
+  let logo = null; if (c.logoAssetId) { try { logo = await loadImg(c.logoAssetId); } catch (e) {} }
+  if (logo) {
+    const s = Math.min((bw - 24) / logo.naturalWidth, (bh - 24) / logo.naturalHeight);
+    ctx.drawImage(logo, bx + (bw - logo.naturalWidth*s)/2, by + (bh - logo.naturalHeight*s)/2, logo.naturalWidth*s, logo.naturalHeight*s);
+  } else {
+    ctx.fillStyle = color; ctx.textAlign = 'center';
+    ctx.font = '800 50px "Schibsted Grotesk", Arial, sans-serif';
+    ctx.fillText(String(c.short || (c.name || '?').slice(0,2)).toUpperCase().slice(0,3), bx + bw/2, by + bh/2 + 10);
+    ctx.font = '700 15px "Schibsted Grotesk", Arial, sans-serif'; ctx.globalAlpha = .7;
+    ctx.fillText('BEACON', bx + bw/2, by + bh - 22); ctx.globalAlpha = 1; ctx.textAlign = 'left';
+  }
+  if (S.settings?.eho !== false) {
+    ctx.font = '700 22px "Atkinson Hyperlegible", Arial, sans-serif'; ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(255,255,255,.88)'; ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 6;
+    ctx.fillText('Equal Housing Opportunity', SZ - 40, SZ - 34);
+    ctx.shadowBlur = 0; ctx.textAlign = 'left';
+  }
+}
+
+// ---------- data ----------
+async function init() {
+  renderAll();
+  matchMedia('(max-width: 760px)').addEventListener('change', e => { S.narrow = e.matches; if (S.view === 'calendar') renderMain(); });
+  const db = await (window.claude?.use ? claude.use('db') : null);
+  S.db = db;
+  if (!db) { S.loaded = { communities: true, posts: true, settings: true }; renderAll(); return; }
+  claude.use('user').then(async u => { S.user = u; if (u) { const w = await u.can('data.write'); if (w === false) { S.canWrite = false; renderAll(); } } });
+  claude.use('assets').then(a => { S.assets = a; if (S.drawer || S.view === 'communities') renderAll(); });
+  claude.use('sample').then(s => { S.sample = s; renderAll(); });
+  db.collection('communities').onSnapshot(snap => {
+    S.communities = {}; snap.docs.forEach(d => S.communities[d.id] = d.data());
+    S.loaded.communities = true; renderAll();
+  }, e => console.warn(e));
+  db.collection('media').onSnapshot(snap => {
+    S.media = {}; snap.docs.forEach(d => S.media[d.id] = d.data());
+    if (S.drawer || S.view === 'communities') renderAll();
+  }, e => console.warn(e));
+  db.doc('settings/brand').onSnapshot(d => { S.settings = d.exists ? d.data() : {}; S.loaded.settings = true; renderAll(); }, e => console.warn(e));
+  subscribePosts();
+}
+function subscribePosts() {
+  if (!S.db) return;
+  if (unsubPosts) unsubPosts();
+  S.loaded.posts = false; S.posts = {};
+  const { first, last } = monthBounds(S.ym);
+  const from = ds(mondayOf(first)), to = ds(addDays(mondayOf(last), 6));
+  unsubPosts = S.db.collection('posts').where('date', '>=', from).where('date', '<=', to).onSnapshot(snap => {
+    S.posts = {}; snap.docs.forEach(d => S.posts[d.id] = d.data());
+    S.loaded.posts = true;
+    if (S.drawer && S.drawer.id && !S.posts[S.drawer.id]) { /* deleted elsewhere */ }
+    renderRail(); if (S.view === 'calendar') renderMain();
+  }, e => { console.warn(e); toast('Could not load posts. Reload the page to try again.', true); });
+}
+function stamp() { return new Date().toISOString(); }
+async function savePost(id, data) {
+  data.updatedAt = stamp();
+  if (id) { await S.db.doc('posts/' + id).set(data); return id; }
+  const ref = await S.db.collection('posts').add(data); return ref.id;
+}
+function visiblePosts() {
+  return Object.entries(S.posts).filter(([, p]) => S.community === 'all' || p.communityId === S.community)
+    .filter(([, p]) => !p.communityId || !comm(p.communityId) || comm(p.communityId).active !== false);
+}
+
+// ---------- render: shell ----------
+function renderAll() { renderTabs(); renderRail(); renderMain(); renderDrawer(); }
+function renderTabs() {
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === S.view)));
+}
+function commList() {
+  return Object.entries(S.communities).filter(([, c]) => c.active !== false).sort((a, b) => String(a[1].name).localeCompare(String(b[1].name)));
+}
+function renderRail() {
+  const list = $('#rail-list'); list.replaceChildren();
+  const sel = $('#rail-select'); sel.replaceChildren();
+  const inMonth = Object.values(S.posts).filter(p => String(p.date).startsWith(S.ym));
+  const counts = id => {
+    const ps = inMonth.filter(p => id === 'all' || p.communityId === id);
+    return { n: ps.length, attn: ps.filter(p => p.status === 'draft' && readiness(p).blockers.length).length };
+  };
+  const item = (id, name, meta, color) => {
+    const c = counts(id);
+    list.append(h('button', { class: 'rail-item', 'aria-current': String(S.community === id), onclick: () => { S.community = id; if (S.view === 'communities' && id !== 'all') S.editCommunity = id; renderAll(); } },
+      h('span', { class: 'rail-dot', style: { background: color || 'var(--navy)' } }),
+      h('span', { style: { minWidth: 0 } }, h('div', { class: 'rail-name', text: name }), meta ? h('div', { class: 'rail-meta', text: meta }) : null),
+      h('span', { class: 'rail-count', title: `${c.n} posts this month, ${c.attn} need attention` }, String(c.n), c.attn ? h('span', { class: 'attn', text: ' · ' + c.attn + '!' }) : null)));
+    sel.append(h('option', { value: id, selected: S.community === id }, name + (c.n ? ` (${c.n})` : '')));
+  };
+  item('all', 'All communities', `${commList().length} active`, null);
+  for (const [id, c] of commList()) item(id, c.name, [c.city, c.state].filter(Boolean).join(', '), c.color);
+  sel.onchange = () => { S.community = sel.value; if (S.view === 'communities' && sel.value !== 'all') S.editCommunity = sel.value; renderAll(); };
+}
+function renderMain() {
+  const main = $('#main'); main.replaceChildren();
+  if (!S.loaded.communities || !S.loaded.settings) { main.append(h('div', { class: 'empty' }, h('h3', { text: 'Loading your communities…' }))); return; }
+  if (!S.db) { main.append(h('div', { class: 'empty' }, h('h3', { text: 'Open this page in Claude to load your data' }), h('p', { text: 'The command center keeps communities, posts and photos in its own database, which is available when the page is viewed on claude.ai while signed in.' }))); return; }
+  if (S.view === 'calendar') renderCalendar(main);
+  else if (S.view === 'communities') renderCommunities(main);
+  else renderSettings(main);
+}
+
+// ---------- render: calendar ----------
+function renderCalendar(main) {
+  const { first, last } = monthBounds(S.ym);
+  const posts = visiblePosts();
+  const monthPosts = posts.filter(([, p]) => String(p.date).startsWith(S.ym)).map(([, p]) => p);
+  const cnt = s => monthPosts.filter(p => p.status === s).length;
+  const needs = monthPosts.filter(p => p.status === 'draft' && readiness(p).blockers.length).length;
+
+  const scopeName = S.community === 'all' ? 'all communities' : (comm(S.community)?.name || '');
+  main.append(h('div', { class: 'toolbar' },
+    h('div', { class: 'month-nav' },
+      h('button', { class: 'btn icon', 'aria-label': 'Previous month', onclick: () => shiftMonth(-1) }, '‹'),
+      h('h1', { class: 'month-title', text: MONTHS[first.getMonth()] + ' ' + first.getFullYear() }),
+      h('button', { class: 'btn icon', 'aria-label': 'Next month', onclick: () => shiftMonth(1) }, '›')),
+    h('span', { class: 'spacer' }),
+    S.sample && S.canWrite ? h('button', { class: 'btn', onclick: openGenerate }, 'Generate drafts') : null,
+    S.canWrite ? h('button', { class: 'btn', onclick: () => openEditor(null, ds(first)) }, '+ New post') : null,
+    S.canWrite ? h('button', { class: 'btn beam', disabled: !monthPosts.some(p => p.status === 'draft'), onclick: () => bulkApprove(ds(first), ds(last), MONTHS[first.getMonth()]) }, 'Approve month') : null));
+
+  main.append(h('div', { class: 'toolbar' },
+    h('div', { class: 'summary' },
+      h('span', { class: 'pill' }, h('span', { class: 'n', text: monthPosts.length }), ' posts · ' + scopeName),
+      h('span', { class: 'pill' }, h('span', { class: 'n', text: cnt('draft') }), ' drafts'),
+      h('span', { class: 'pill ok' }, h('span', { class: 'n', text: cnt('approved') }), ' approved'),
+      needs ? h('span', { class: 'pill warn' }, h('span', { class: 'n', text: needs }), ' need info') : null,
+      cnt('held') + cnt('failed') ? h('span', { class: 'pill bad' }, h('span', { class: 'n', text: cnt('held') + cnt('failed') }), ' held or failed') : null,
+      cnt('posted') ? h('span', { class: 'pill' }, h('span', { class: 'n', text: cnt('posted') }), ' posted') : null),
+    h('span', { class: 'spacer' }),
+    h('div', { class: 'legend' }, Object.entries(TYPES).filter(([k]) => k !== 'other').map(([k, t]) => h('span', null, h('i', { class: 'tdot', style: { background: typeColor(k) } }), t.label)))));
+
+  if (!S.loaded.posts) { main.append(h('div', { class: 'empty' }, h('h3', { text: 'Loading posts…' }))); return; }
+  if (!commList().length) {
+    main.append(h('div', { class: 'empty' }, h('h3', { text: 'No communities yet' }), h('p', { text: 'Add your first community on the Communities tab. Claude fills its profile from the community website.' }),
+      h('button', { class: 'btn primary', onclick: () => { S.view = 'communities'; renderAll(); } }, 'Go to Communities')));
+    return;
+  }
+
+  const byDay = {};
+  for (const [id, p] of posts) (byDay[p.date] = byDay[p.date] || []).push([id, p]);
+  for (const k in byDay) byDay[k].sort((a, b) => String(a[1].time).localeCompare(String(b[1].time)));
+
+  const weeks = [];
+  for (let w = mondayOf(first); w <= last; w = addDays(w, 7)) weeks.push(w);
+  const todayS = ds(today);
+
+  if (S.narrow) {
+    const ag = h('div', { class: 'agenda' });
+    for (const w of weeks) {
+      const days = [...Array(7)].map((_, i) => addDays(w, i));
+      const wkPosts = days.flatMap(d => byDay[ds(d)] || []);
+      const drafts = wkPosts.filter(([, p]) => p.status === 'draft').length;
+      const readyN = wkPosts.filter(([, p]) => p.status === 'draft' && isReady(p)).length;
+      const card = h('section', { class: 'ag-week' }, h('div', { class: 'ag-week-head' },
+        h('b', { text: `${fmtShort(ds(days[0]))} – ${fmtShort(ds(days[6]))}` }),
+        S.canWrite && readyN ? h('button', { class: 'btn', onclick: () => bulkApprove(ds(days[0]), ds(days[6]), 'this week') }, `Approve ${readyN} ready`) : (wkPosts.length ? h('span', { class: 'week-done', style: drafts ? { color: 'var(--warn)' } : null, text: drafts ? `${drafts} to fix` : 'All approved' }) : null)));
+      let any = false;
+      for (const d of days) {
+        const items = byDay[ds(d)] || []; if (!items.length) continue; any = true;
+        card.append(h('div', { class: 'ag-day' },
+          h('div', { class: 'ag-date' }, DOW[(d.getDay()+6)%7], h('b', { text: d.getDate() })),
+          h('div', { class: 'ag-list' }, items.map(([id, p]) => chip(id, p)))));
+      }
+      if (!any) card.append(h('div', { class: 'ag-day' }, h('span'), h('span', { class: 'muted small', text: 'Nothing scheduled.' })));
+      ag.append(card);
+    }
+    main.append(ag);
+    if (!monthPosts.length) main.append(emptyMonth());
+    return;
+  }
+
+  const cal = h('div', { class: 'cal' }, h('div', { class: 'cal-head' }, h('div', { text: 'Week' }), DOW.map(d => h('div', { text: d }))));
+  for (const w of weeks) {
+    const days = [...Array(7)].map((_, i) => addDays(w, i));
+    const wkPosts = days.flatMap(d => byDay[ds(d)] || []);
+    const drafts = wkPosts.filter(([, p]) => p.status === 'draft').length;
+      const readyN = wkPosts.filter(([, p]) => p.status === 'draft' && isReady(p)).length;
+    const row = h('div', { class: 'cal-week' }, h('div', { class: 'week-gutter' },
+      h('div', { class: 'wk', text: MONTHS[w.getMonth()].slice(0,3) + ' ' + w.getDate() }),
+      S.canWrite && readyN ? h('button', { class: 'btn', title: `Approve ${readyN} ready drafts this week`, onclick: () => bulkApprove(ds(days[0]), ds(days[6]), 'this week') }, `Approve ${readyN}`) : null,
+      drafts > readyN ? h('div', { class: 'week-done', style: { color: 'var(--warn)' }, text: `${drafts - readyN} to fix` }) : (wkPosts.length && !drafts ? h('div', { class: 'week-done', text: '✓ Week set' }) : null)));
+    for (const d of days) {
+      const s = ds(d), out = d.getMonth() !== first.getMonth();
+      row.append(h('div', { class: 'cal-day' + (out ? ' out' : '') + (s === todayS ? ' today' : '') },
+        h('div', { class: 'dnum' }, h('b', { text: d.getDate() }), S.canWrite ? h('button', { class: 'add-day', 'aria-label': 'Add post on ' + fmtShort(s), onclick: () => openEditor(null, s) }, '+') : null),
+        (byDay[s] || []).map(([id, p]) => chip(id, p))));
+    }
+    cal.append(row);
+  }
+  main.append(h('div', { style: { overflowX: 'auto' } }, h('div', { style: { minWidth: '820px' } }, cal)));
+  if (!monthPosts.length) main.append(emptyMonth());
+}
+function emptyMonth() {
+  return h('div', { class: 'empty' }, h('h3', { text: 'Nothing planned this month yet' }),
+    h('p', { text: S.sample ? 'Generate a month of drafts from each community profile, or add posts one at a time with + on any day.' : 'Add posts with + on any day.' }),
+    S.sample && S.canWrite ? h('button', { class: 'btn primary', onclick: openGenerate }, 'Generate drafts') : null);
+}
+function chip(id, p) {
+  const c = comm(p.communityId) || {};
+  const r = p.status === 'draft' ? readiness(p) : null;
+  const needs = r && r.blockers.length;
+  let thumb;
+  if (p.finalAssetId) thumb = h('span', { class: 'thumb', style: { backgroundImage: `url(${blob(p.finalAssetId)})` } });
+  else if (p.assetId && p.mediaKind !== 'video') thumb = h('span', { class: 'thumb', style: { backgroundImage: `url(${blob(p.assetId)})` } });
+  else if (p.type === 'video' || p.needsData) thumb = h('span', { class: 'thumb missing' });
+  else thumb = h('span', { class: 'thumb gfx' });
+  const stt = p.status || 'draft';
+  const status = needs ? h('span', { class: 'st needs', text: 'Needs info' }) : stt === 'draft' ? h('span', { class: 'st', text: 'Draft' }) : h('span', { class: 'st ' + stt, text: stt[0].toUpperCase() + stt.slice(1) });
+  return h('button', { class: `chip ${p.status}${needs ? ' needs' : ''}`, '--tc': typeColor(p.type), onclick: () => openEditor(id),
+      title: `${c.name || ''} · ${(TYPES[p.type] || TYPES.other).label} · ${p.title || ''}` },
+    thumb,
+    h('span', { class: 'ct' },
+      h('div', { class: 'ctitle', text: p.title || (TYPES[p.type] || TYPES.other).label }),
+      h('div', { class: 'cmeta' }, S.community === 'all' ? h('b', { text: c.short || '' }) : null, status, h('span', { text: '· ' + platformInitials(p) }))));
+}
+function platformInitials(p) { return Object.keys(PLATFORMS).filter(k => p.platforms?.[k]).map(k => k === 'facebook' ? 'FB' : k === 'instagram' ? 'IG' : 'G').join(' '); }
+function shiftMonth(n) {
+  const [y, m] = S.ym.split('-').map(Number);
+  S.ym = ymOf(new Date(y, m - 1 + n, 1));
+  try { localStorage.setItem('beacon.ym', S.ym); } catch (e) {}
+  subscribePosts(); renderAll();
+}
+
+// ---------- approve ----------
+async function renderFinal(p) {
+  if (!S.assets || p.mediaKind === 'video') return null;
+  const cv = document.createElement('canvas');
+  await drawComposite(cv, p);
+  const b = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.9));
+  if (!b) return null;
+  const up = await S.assets.upload(b, { type: 'image/jpeg' });
+  return up.id;
+}
+async function approve(id, p) {
+  const finalAssetId = await renderFinal(p).catch(e => { console.warn(e); return null; });
+  await S.db.doc('posts/' + id).update({ status: 'approved', approvedAt: stamp(), finalAssetId: finalAssetId || null, updatedAt: stamp() });
+}
+function isReady(p) { const r = readiness(p); return !r.blockers.length && !r.warnings.some(w => w.startsWith('Fair housing')); }
+async function bulkApprove(from, to, label) {
+  if (S.busy) return;
+  const items = visiblePosts().filter(([, p]) => p.date >= from && p.date <= to && p.status === 'draft');
+  const ready = items.filter(([, p]) => isReady(p));
+  const skipped = items.length - ready.length;
+  const body = h('div', { class: 'stack' },
+    h('p', { text: `${ready.length} of ${items.length} drafts for ${label} are ready and will be approved. The final image for each is rendered with its corner badge and saved.` }),
+    skipped ? h('div', { class: 'notice', text: `${skipped} will stay as drafts because they need website info, media, or a fair housing review. Open them from the calendar to fix.` }) : null);
+  modal({ title: `Approve ${label}`, body, actions: [
+    { label: 'Cancel' },
+    { label: `Approve ${ready.length}`, primary: true, onClick: async () => {
+      if (!ready.length) return;
+      S.busy = true; let done = 0, failed = 0;
+      for (const [id, p] of ready) { try { await approve(id, p); done++; } catch (e) { console.warn(e); failed++; } }
+      S.busy = false;
+      toast(`Approved ${done}.` + (failed ? ` ${failed} could not be saved; try again.` : '') + (skipped ? ` ${skipped} still need attention.` : ''), !!failed);
+    } } ] });
+}
+
+// ---------- editor drawer ----------
+function blankPost(date) {
+  const c = S.community !== 'all' ? S.community : (commList()[0] || [])[0];
+  return { communityId: c, date, time: S.settings?.defaultTime || '10:00', type: 'amenity', title: '', caption: '', gbpCaption: '', hashtags: '',
+    platforms: { facebook: true, instagram: true, google: false }, assetId: null, mediaKind: null, overlay: { corner: comm(c)?.defaultCorner || 'tr', label: '' },
+    status: 'draft', needsData: '', createdBy: 'user' };
+}
+function openEditor(id, date) {
+  const src = id ? S.posts[id] : blankPost(date);
+  if (!src) return;
+  S.drawer = { id, draft: JSON.parse(JSON.stringify(src)), pv: 'feed', confirmDelete: false, rewriting: false };
+  renderDrawer();
+}
+function closeDrawer() { S.drawer = null; renderDrawer(); }
+let drawerEl = null, previewTimer = null;
+function renderDrawer() {
+  const keepScroll = drawerEl?.querySelector('.drawer-body')?.scrollTop || 0;
+  if (drawerEl) { drawerEl.remove(); drawerEl = null; }
+  if (!S.drawer) return;
+  const D = S.drawer, p = D.draft, c = comm(p.communityId) || {};
+  const ro = !S.canWrite;
+  const set = (k, v, re) => { p[k] = v; if (re) renderDrawer(); else schedulePreview(); };
+
+  const canvas = h('canvas', { class: 'preview-canvas', width: 1080, height: 1080, 'aria-label': 'Image preview' });
+  const r = readiness(p);
+  const capCount = h('div', { class: 'counter' });
+  const updCount = () => { const n = (p.caption || '').length + (p.hashtags ? p.hashtags.length + 2 : 0); capCount.textContent = `${n} / ${LIMITS.instagram}`; capCount.classList.toggle('over', n > LIMITS.instagram); };
+  updCount();
+
+  const commSel = h('select', { id: 'pe-comm', disabled: ro, onchange: e => { p.communityId = e.target.value; p.assetId = null; p.mediaKind = null; renderDrawer(); } },
+    commList().map(([cid, cc]) => h('option', { value: cid, selected: cid === p.communityId }, cc.name)));
+  const typeSel = h('select', { id: 'pe-type', disabled: ro, onchange: e => set('type', e.target.value, true) },
+    Object.entries(TYPES).map(([k, t]) => h('option', { value: k, selected: k === p.type }, t.label)));
+
+  const mediaItems = Object.entries(S.media).filter(([, m]) => m.communityId === p.communityId);
+  const fileIn = h('input', { type: 'file', accept: 'image/*,video/mp4,video/quicktime', hidden: true, onchange: async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const mid = await uploadMedia(f, p.communityId); if (mid) { const m = S.media[mid] || {}; p.assetId = m.assetId; p.mediaKind = m.kind; renderDrawer(); }
+  } });
+  const mediaGrid = h('div', { class: 'media-grid' },
+    h('button', { class: 'media-tile none', 'aria-pressed': String(!p.assetId), disabled: ro, onclick: () => { p.assetId = null; p.mediaKind = null; renderDrawer(); } }, 'Branded graphic'),
+    mediaItems.map(([mid, m]) => h('button', { class: 'media-tile', 'aria-pressed': String(p.assetId === m.assetId), disabled: ro, title: m.caption || m.source || '',
+        style: m.kind === 'video' ? {} : { backgroundImage: `url(${blob(m.assetId)})` }, onclick: () => { p.assetId = m.assetId; p.mediaKind = m.kind; renderDrawer(); } },
+      m.kind === 'video' ? h('span', { class: 'vid', text: 'VIDEO' }) : null)),
+    S.assets && !ro ? h('button', { class: 'media-tile upload-tile', onclick: () => fileIn.click() }, '+ Upload') : null, fileIn);
+
+  const previewMedia = (p.mediaKind === 'video' && p.assetId) ? h('video', { class: 'preview-video', src: blob(p.assetId), controls: true, muted: true, playsinline: true }) : canvas;
+  const capText = D.pv === 'google' ? (p.gbpCaption || p.caption || '') : (p.caption || '');
+  const preview = h('div', { class: 'preview-card' },
+    h('div', { class: 'pv-tabs', role: 'tablist' },
+      ['feed', 'google'].map(k => h('button', { class: 'pv-tab', role: 'tab', 'aria-selected': String(D.pv === k), onclick: () => { D.pv = k; renderDrawer(); } }, k === 'feed' ? 'Facebook / Instagram' : 'Google Business'))),
+    h('div', { class: 'preview-top' },
+      h('span', { class: 'avatar', style: c.logoAssetId ? { backgroundImage: `url(${blob(c.logoAssetId)})`, backgroundColor: '#fff' } : { background: c.color || 'var(--navy)' } }, c.logoAssetId ? '' : (c.short || '').slice(0, 3)),
+      h('div', null, h('b', { text: c.name || 'Choose a community' }), h('div', { class: 'small muted', text: `${fmtShort(p.date)} · ${p.time || ''}` }))),
+    previewMedia,
+    h('div', { class: 'preview-text' }, capText, D.pv === 'feed' && p.hashtags ? h('span', { class: 'tags', text: '\n\n' + p.hashtags }) : null));
+
+  const statusLine = p.status === 'approved' ? h('div', { class: 'check ok' }, h('span', { text: '✓' }), h('span', null, h('b', { text: 'Approved' }), p.approvedAt ? ` ${new Date(p.approvedAt).toLocaleString()}` : '', '. Editing returns it to draft.'))
+    : p.status === 'held' ? h('div', { class: 'check bad' }, h('span', { text: '!' }), h('span', null, h('b', { text: 'Held by publisher. ' }), p.error || 'The website changed since approval.'))
+    : p.status === 'failed' ? h('div', { class: 'check bad' }, h('span', { text: '!' }), h('span', null, h('b', { text: 'Publishing failed. ' }), p.error || ''))
+    : p.status === 'posted' ? h('div', { class: 'check ok' }, h('span', { text: '✓' }), h('span', null, h('b', { text: 'Posted' }), p.postedAt ? ' ' + new Date(p.postedAt).toLocaleString() : ''))
+    : null;
+
+  const checks = h('div', { class: 'checklist' }, statusLine,
+    r.blockers.map(t => h('div', { class: 'check bad' }, h('span', { text: '✕' }), h('span', { text: t }))),
+    r.warnings.map(t => h('div', { class: 'check warn' }, h('span', { text: '!' }), h('span', { text: t }))),
+    r.ok.map(t => h('div', { class: 'check ok' }, h('span', { text: '✓' }), h('span', { text: t }))));
+
+  const rewriteIn = h('input', { type: 'text', id: 'pe-rewrite', placeholder: 'e.g. shorter, more playful, mention the pool', disabled: ro });
+  const left = h('div', { class: 'stack' },
+    h('div', { class: 'row' },
+      h('div', { class: 'field' }, h('label', { for: 'pe-comm', text: 'Community' }), commSel),
+      h('div', { class: 'field' }, h('label', { for: 'pe-type', text: 'Post type' }), typeSel)),
+    h('div', { class: 'row' },
+      h('div', { class: 'field' }, h('label', { for: 'pe-date', text: 'Date' }), h('input', { type: 'date', id: 'pe-date', value: p.date, disabled: ro, onchange: e => set('date', e.target.value, true) })),
+      h('div', { class: 'field' }, h('label', { for: 'pe-time', text: 'Time' }), h('input', { type: 'time', id: 'pe-time', value: p.time || '', disabled: ro, onchange: e => set('time', e.target.value, true) }))),
+    h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Platforms' }), h('div', { class: 'checks' },
+      Object.entries(PLATFORMS).map(([k, l]) => h('label', null, h('input', { type: 'checkbox', id: 'pe-pl-' + k, checked: !!p.platforms?.[k], disabled: ro, onchange: e => { p.platforms = { ...p.platforms, [k]: e.target.checked }; renderDrawer(); } }), l)))),
+    p.needsData ? h('div', { class: 'callout warn' }, h('b', { text: 'Needs website info. ' }), p.needsData,
+      ro ? null : h('div', { style: { marginTop: '8px' } }, h('button', { class: 'btn', onclick: () => set('needsData', '', true) }, 'Mark as resolved'))) : null,
+    h('div', { class: 'field' }, h('label', { for: 'pe-title', text: 'Calendar title' }), h('input', { type: 'text', id: 'pe-title', value: p.title || '', disabled: ro, oninput: e => set('title', e.target.value) })),
+    h('div', { class: 'field' }, h('label', { for: 'pe-cap', text: 'Caption (Facebook & Instagram)' }),
+      h('textarea', { id: 'pe-cap', rows: 7, disabled: ro, oninput: e => { p.caption = e.target.value; updCount(); schedulePreview(); } }, p.caption || ''), capCount),
+    h('div', { class: 'field' }, h('label', { for: 'pe-tags', text: 'Hashtags (Instagram & Facebook)' }), h('input', { type: 'text', id: 'pe-tags', value: p.hashtags || '', disabled: ro, oninput: e => { p.hashtags = e.target.value; updCount(); schedulePreview(); } })),
+    p.platforms?.google ? h('div', { class: 'field' }, h('label', { for: 'pe-gbp', text: 'Google Business caption (optional)' }),
+      h('textarea', { id: 'pe-gbp', rows: 4, disabled: ro, placeholder: 'Leave blank to reuse the main caption. Google ignores hashtags.', oninput: e => set('gbpCaption', e.target.value) }, p.gbpCaption || '')) : null,
+    S.sample && !ro ? h('div', { class: 'field' }, h('label', { for: 'pe-rewrite', text: 'Rewrite with Claude' }),
+      h('div', { class: 'row', style: { flexWrap: 'nowrap' } }, rewriteIn, h('button', { class: 'btn', disabled: D.rewriting, onclick: () => rewrite(rewriteIn.value) }, D.rewriting ? 'Writing…' : 'Rewrite'))) : null,
+    h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Photo or video' }), mediaGrid,
+      h('span', { class: 'hint', text: mediaItems.length ? 'Photos come from this community’s library.' : 'This community has no photos yet. Upload here, or add them on the Communities tab.' })),
+    p.mediaKind !== 'video' ? h('div', { class: 'row' },
+      h('div', { class: 'field' }, h('label', { for: 'pe-label', text: 'Graphic headline (optional)' }), h('input', { type: 'text', id: 'pe-label', value: p.overlay?.label || '', disabled: ro, placeholder: 'e.g. Happy Thanksgiving', oninput: e => { p.overlay = { ...p.overlay, label: e.target.value }; schedulePreview(); } })),
+      h('div', { class: 'field', style: { flex: '0 0 150px' } }, h('label', { for: 'pe-corner', text: 'Badge corner' }),
+        h('select', { id: 'pe-corner', disabled: ro, onchange: e => { p.overlay = { ...p.overlay, corner: e.target.value }; schedulePreview(); } },
+          h('option', { value: 'tl', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tl' }, 'Top left'),
+          h('option', { value: 'tr', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tr' }, 'Top right')))) : null);
+
+  const right = h('div', { class: 'stack' }, preview, h('div', { class: 'eyebrow', text: 'Checks' }), checks);
+
+  const foot = h('div', { class: 'drawer-foot' });
+  if (!ro) {
+    if (D.confirmDelete) {
+      foot.append(h('span', { class: 'small', text: 'Delete this post?' }),
+        h('button', { class: 'btn danger', onclick: async () => { await S.db.doc('posts/' + D.id).delete(); toast('Post deleted.'); closeDrawer(); } }, 'Delete'),
+        h('button', { class: 'btn ghost', onclick: () => { D.confirmDelete = false; renderDrawer(); } }, 'Keep'));
+    } else if (D.id) foot.append(h('button', { class: 'btn ghost danger', onclick: () => { D.confirmDelete = true; renderDrawer(); } }, 'Delete'));
+    foot.append(h('span', { class: 'spacer' }));
+    foot.append(h('button', { class: 'btn', onclick: () => saveDraft(false) }, D.id ? 'Save' : 'Save draft'));
+    if (p.status === 'approved') foot.append(h('button', { class: 'btn', onclick: async () => { await S.db.doc('posts/' + D.id).update({ status: 'draft', approvedAt: null, finalAssetId: null, updatedAt: stamp() }); p.status = 'draft'; toast('Moved back to draft.'); renderDrawer(); } }, 'Unapprove'));
+    else if (['draft', 'held', 'failed'].includes(p.status)) foot.append(h('button', { class: 'btn beam', disabled: !!r.blockers.length, title: r.blockers[0] || '', onclick: () => saveDraft(true) }, 'Save & approve'));
+  } else foot.append(h('span', { class: 'small muted', text: 'You can view this post but not change it.' }));
+
+  drawerEl = h('div', null,
+    h('div', { class: 'scrim', onclick: closeDrawer }),
+    h('section', { class: 'drawer', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Edit post' },
+      h('div', { class: 'drawer-head' },
+        h('i', { class: 'tdot', style: { background: typeColor(p.type), width: '12px', height: '12px' } }),
+        h('h2', { text: (p.title || (TYPES[p.type] || TYPES.other).label) + (c.name ? ' · ' + c.name : '') }),
+        h('button', { class: 'btn ghost', 'aria-label': 'Close', onclick: closeDrawer }, '✕')),
+      h('div', { class: 'drawer-body' }, left, right),
+      foot));
+  document.body.append(drawerEl);
+  drawerEl.querySelector('.drawer-body').scrollTop = keepScroll;
+  drawComposite(canvas, p).catch(e => console.warn(e));
+  function schedulePreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(() => {
+      if (!S.drawer) return;
+      const cv = drawerEl?.querySelector('canvas.preview-canvas'); if (cv) drawComposite(cv, p).catch(() => {});
+      const pt = drawerEl?.querySelector('.preview-text');
+      if (pt) { pt.replaceChildren(D.pv === 'google' ? (p.gbpCaption || p.caption || '') : (p.caption || '')); if (D.pv === 'feed' && p.hashtags) pt.append(h('span', { class: 'tags', text: '\n\n' + p.hashtags })); }
+    }, 250);
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.drawer && !document.querySelector('.modal')) closeDrawer(); });
+
+async function saveDraft(andApprove) {
+  const D = S.drawer; if (!D) return;
+  const p = D.draft;
+  if (!p.communityId) { toast('Choose a community first.', true); return; }
+  const orig = D.id ? S.posts[D.id] : null;
+  const contentChanged = orig && JSON.stringify({ ...orig, status: 0, approvedAt: 0, finalAssetId: 0, updatedAt: 0 }) !== JSON.stringify({ ...p, status: 0, approvedAt: 0, finalAssetId: 0, updatedAt: 0 });
+  if (orig && orig.status === 'approved' && contentChanged) { p.status = 'draft'; p.approvedAt = null; p.finalAssetId = null; }
+  try {
+    const id = await savePost(D.id, p);
+    D.id = id;
+    if (andApprove) {
+      const r = readiness(p);
+      const fh = r.warnings.filter(w => w.startsWith('Fair housing'));
+      const go = async () => { await approve(id, p); toast('Approved.'); closeDrawer(); };
+      if (fh.length) {
+        modal({ title: 'Approve with fair housing flags?', body: h('div', { class: 'stack' }, h('p', { text: 'This caption has phrases flagged for review:' }), h('ul', null, fh.map(w => h('li', { text: w.replace('Fair housing review: ', '') })))),
+          actions: [{ label: 'Go back and edit' }, { label: 'I reviewed it, approve', primary: true, onClick: go }] });
+        return;
+      }
+      await go();
+    } else { toast('Saved.'); renderDrawer(); }
+  } catch (e) { console.warn(e); toast('Could not save. ' + (e.code === 'invalid_argument' ? 'You may not have edit access.' : 'Try again.'), true); }
+}
+
+async function uploadMedia(file, communityId) {
+  if (!S.assets) { toast('Uploading needs edit access to this page.', true); return null; }
+  const kind = file.type.startsWith('video') ? 'video' : 'image';
+  try {
+    toast(`Uploading ${file.name}…`);
+    const up = await S.assets.upload(file);
+    const ref = await S.db.collection('media').add({ communityId, assetId: up.id, kind, caption: file.name.replace(/\.[^.]+$/, ''), source: 'upload', addedAt: stamp() });
+    S.media[ref.id] = { communityId, assetId: up.id, kind, caption: file.name, source: 'upload' };
+    return ref.id;
+  } catch (e) {
+    console.warn(e);
+    toast(e.code === 'too_large' ? 'That file is over the 20 MB limit.' : e.code === 'unsupported_type' ? 'That file type is not supported. Use JPG, PNG, or MP4.' : 'Upload failed. Try again.', true);
+    return null;
+  }
+}
+
+// ---------- Claude: prompts ----------
+function brandBlock() {
+  const st = S.settings || {};
+  return `COMPANY: ${st.company || 'Beacon Management'}
+COMPANY VOICE: ${st.voice || 'Warm, neighborly, confident. Plain language.'}`;
+}
+function communityBlock(c) {
+  const fp = (c.floorPlans || []).map(f => `- ${f.name}: ${f.beds ?? '?'} bed / ${f.baths ?? '?'} bath${f.sqft ? ', ' + f.sqft + ' sq ft' : ''}${f.notes ? ' (' + f.notes + ')' : ''}`).join('\n') || '(none on file)';
+  return `COMMUNITY: ${c.name}
+LOCATION: ${[c.city, c.state].filter(Boolean).join(', ') || '(unknown)'}
+WEBSITE: ${c.website || '(none)'}
+AUDIENCE NOTES (tone only, never state or imply who should live here): ${c.audience || '(none)'}
+COMMUNITY VOICE NOTES: ${c.voice || '(none)'}
+AMENITIES (from website): ${(c.amenities || []).join('; ') || '(none on file)'}
+FLOOR PLANS (from website):
+${fp}
+CURRENT SPECIALS (from website): ${(c.specials || []).map(s => s.text).join('; ') || '(none on file)'}
+NEIGHBORHOOD (from website): ${(c.neighborhood || []).join('; ') || '(none on file)'}`;
+}
+const RULES = `RULES:
+- Fair housing: never describe who the ideal resident is. Do not mention families, children, age groups, students, singles, couples, religion, national origin, disability, or "safe neighborhood". Describe the property, amenities, and events. Avoid "master bedroom"; say "primary bedroom".
+- Facts: use only facts listed above. If a post needs a fact that is not on file (a specific amenity, a floor plan's details, a price, a special), do not invent it. Set "needsData" to a short note naming exactly what is missing and still write a caption with a clear [bracketed placeholder] for the missing fact.
+- No prices unless they appear in CURRENT SPECIALS.
+- Captions: 40–120 words, 1–2 emoji at most, end with a soft call to action (e.g. "Schedule a tour at the link in bio" for Instagram-style copy, or "Call or stop by the leasing office").
+- Hashtags: 3–6, include a location tag.`;
+
+async function openGenerate() {
+  const opts = commList();
+  const sel = h('select', { id: 'gen-comm' }, h('option', { value: 'all' }, `All ${opts.length} communities`), opts.map(([id, c]) => h('option', { value: id, selected: S.community === id }, c.name)));
+  const repl = h('input', { type: 'checkbox', id: 'gen-repl', checked: true });
+  const prog = h('div', { class: 'progress', hidden: true }, h('div'));
+  const status = h('div', { class: 'small muted' });
+  const { first } = monthBounds(S.ym);
+  modal({ title: `Generate ${MONTHS[first.getMonth()]} drafts`, body: h('div', { class: 'stack' },
+      h('p', { class: 'small', text: `Claude writes ${S.settings?.cadence || '3–4'} posts per week for each community from its website profile and your content mix. Approved posts are kept. Anything that needs facts not on the website is marked “Needs info”.` }),
+      h('div', { class: 'field' }, h('label', { for: 'gen-comm', text: 'Community' }), sel),
+      h('label', { class: 'small', style: { display: 'flex', gap: '8px', alignItems: 'center' } }, repl, 'Replace existing drafts this month (approved and posted are never touched)'),
+      prog, status),
+    actions: [{ label: 'Cancel' }, { label: 'Generate', primary: true, onClick: async () => {
+      const ids = sel.value === 'all' ? opts.map(o => o[0]) : [sel.value];
+      prog.hidden = false; let i = 0;
+      for (const cid of ids) {
+        status.textContent = `Writing ${comm(cid)?.name}… (${i + 1} of ${ids.length})`;
+        try { const n = await generateFor(cid, repl.checked); toast(`${comm(cid)?.name}: ${n} drafts added.`); }
+        catch (e) {
+          console.warn(e);
+          if (e.code === 'not_granted') { toast('Claude access was not allowed for this page.', true); break; }
+          if (e.code === 'rate_limited') { toast('Claude is rate limited right now. Try again in a few minutes.', true); break; }
+          toast(`${comm(cid)?.name}: could not generate drafts. Try again.`, true);
+        }
+        i++; prog.firstChild.style.width = (i / ids.length * 100) + '%';
+      }
+    } }] });
+}
+async function generateFor(cid, replaceDrafts) {
+  const c = comm(cid); const { first, last } = monthBounds(S.ym);
+  const existing = Object.entries(S.posts).filter(([, p]) => p.communityId === cid && String(p.date).startsWith(S.ym));
+  const keep = existing.filter(([, p]) => p.status !== 'draft' || !replaceDrafts);
+  const mix = S.settings?.mix || {};
+  const prompt = `You plan social media posts for an apartment community.
+${brandBlock()}
+
+${communityBlock(c)}
+
+MONTH: ${MONTHS[first.getMonth()]} ${first.getFullYear()} (${ds(first)} to ${ds(last)})
+CADENCE: ${S.settings?.cadence || '3-4'} posts per week, spread across different weekdays.
+CONTENT MIX (relative weights): ${Object.entries(mix).map(([k, v]) => `${k}=${v}`).join(', ') || 'amenity=3, floorplan=2, holiday=2, funday=2, video=1'}
+Use real holidays and widely known "national days" in this month for holiday and funday posts.
+ALREADY SCHEDULED (do not duplicate topics or dates):
+${keep.map(([, p]) => `- ${p.date} ${p.type}: ${p.title}`).join('\n') || '(none)'}
+
+${RULES}
+
+Reply with only a JSON array. Each item:
+{"date":"YYYY-MM-DD","time":"HH:MM","type":"amenity|floorplan|holiday|funday|video|special","title":"short calendar title","caption":"...","hashtags":"#a #b","overlayLabel":"2-4 word graphic headline for holiday/funday/special posts, else empty","platforms":{"facebook":true,"instagram":true,"google":false},"needsData":"empty string or what is missing"}
+Set google true for amenity, floorplan and special posts only.`;
+  const out = await S.sample.json(prompt, { modelTier: 'default' });
+  if (!Array.isArray(out)) throw new Error('bad shape');
+  if (replaceDrafts) for (const [id, p] of existing) if (p.status === 'draft') { await S.db.doc('posts/' + id).delete(); }
+  let n = 0;
+  for (const it of out) {
+    if (!it || typeof it.date !== 'string' || !it.date.startsWith(S.ym) || !/^\d{4}-\d{2}-\d{2}$/.test(it.date)) continue;
+    const type = TYPES[it.type] ? it.type : 'other';
+    await S.db.collection('posts').add({
+      communityId: cid, date: it.date, time: /^\d{2}:\d{2}$/.test(it.time || '') ? it.time : (S.settings?.defaultTime || '10:00'), type,
+      title: String(it.title || '').slice(0, 80), caption: String(it.caption || ''), gbpCaption: '', hashtags: String(it.hashtags || ''),
+      platforms: { facebook: it.platforms?.facebook !== false, instagram: it.platforms?.instagram !== false, google: !!it.platforms?.google },
+      assetId: null, mediaKind: null, overlay: { corner: c.defaultCorner || 'tr', label: String(it.overlayLabel || '') },
+      status: 'draft', needsData: String(it.needsData || ''), createdBy: 'claude', updatedAt: stamp() });
+    n++;
+  }
+  return n;
+}
+async function rewrite(instr) {
+  const D = S.drawer; if (!D || !S.sample) return;
+  const p = D.draft, c = comm(p.communityId) || {};
+  D.rewriting = true; renderDrawer();
+  try {
+    const out = await S.sample.json(`Rewrite this social post caption for an apartment community.
+${brandBlock()}
+
+${communityBlock(c)}
+
+POST TYPE: ${(TYPES[p.type] || TYPES.other).label}
+DATE: ${p.date}
+CURRENT CAPTION:
+${p.caption || '(empty)'}
+CURRENT HASHTAGS: ${p.hashtags || '(none)'}
+INSTRUCTION FROM THE MARKETER: ${instr || 'Improve it.'}
+
+${RULES}
+
+Reply with only JSON: {"caption":"...","hashtags":"#a #b","needsData":"empty or what is missing"}`, { modelTier: 'default', cache: false });
+    if (out && typeof out.caption === 'string') { p.caption = out.caption; if (typeof out.hashtags === 'string') p.hashtags = out.hashtags; p.needsData = String(out.needsData || ''); }
+  } catch (e) { console.warn(e); toast(e.code === 'not_granted' ? 'Claude access was not allowed for this page.' : 'Could not rewrite. Try again.', true); }
+  if (S.drawer === D) { D.rewriting = false; renderDrawer(); }
+}
+
+// ---------- render: communities ----------
+function renderCommunities(main) {
+  const list = commList();
+  if (!S.editCommunity || !comm(S.editCommunity)) S.editCommunity = (S.community !== 'all' && comm(S.community)) ? S.community : (list[0] || [])[0] || null;
+  main.append(h('div', { class: 'toolbar' }, h('h1', { class: 'month-title', text: 'Communities' }), h('span', { class: 'spacer' }),
+    S.canWrite ? h('button', { class: 'btn', onclick: addCommunity }, '+ Add community') : null));
+  if (!S.editCommunity) { main.append(h('div', { class: 'empty' }, h('h3', { text: 'No communities yet' }), h('p', { text: 'Add a community with its website address. Claude reads the site and fills in amenities, floor plans, specials and photos.' }))); return; }
+  const id = S.editCommunity, c = JSON.parse(JSON.stringify(comm(id)));
+  const ro = !S.canWrite;
+  const hv = c.harvest || {};
+  const hvState = hv.status === 'ok' ? ['ok', 'Website read'] : hv.status === 'error' ? ['bad', 'Could not read website'] : hv.status === 'requested' ? ['warn', 'Refresh requested'] : ['warn', 'Not read yet'];
+  const fld = (label, key, attrs = {}) => h('div', { class: 'field' }, h('label', { for: 'c-' + key, text: label }),
+    h('input', { type: attrs.type || 'text', id: 'c-' + key, value: c[key] || '', disabled: ro, placeholder: attrs.placeholder || '', oninput: e => { c[key] = e.target.value; } }), attrs.hint ? h('span', { class: 'hint', text: attrs.hint }) : null);
+  const area = (label, key, val, hint, rows = 5) => h('div', { class: 'field' }, h('label', { for: 'c-' + key, text: label }),
+    h('textarea', { id: 'c-' + key, rows, disabled: ro, oninput: e => { c['_' + key] = e.target.value; } }, val), hint ? h('span', { class: 'hint', text: hint }) : null);
+
+  const media = Object.entries(S.media).filter(([, m]) => m.communityId === id);
+  const fileIn = h('input', { type: 'file', accept: 'image/*,video/mp4,video/quicktime', multiple: true, hidden: true, onchange: async e => { for (const f of e.target.files) await uploadMedia(f, id); renderMain(); } });
+  const logoIn = h('input', { type: 'file', accept: 'image/png,image/svg+xml,image/jpeg', hidden: true, onchange: async e => {
+    const f = e.target.files[0]; if (!f || !S.assets) return;
+    try { const up = await S.assets.upload(f); await S.db.doc('communities/' + id).update({ logoAssetId: up.id }); toast('Logo saved.'); } catch (err) { toast('Logo upload failed.', true); }
+  } });
+
+  const save = async () => {
+    const out = { ...c };
+    if ('_amenities' in c) out.amenities = lines(c._amenities);
+    if ('_neighborhood' in c) out.neighborhood = lines(c._neighborhood);
+    if ('_specials' in c) out.specials = lines(c._specials).map(t => ({ text: t, seenAt: (comm(id).specials || []).find(s => s.text === t)?.seenAt || null, source: 'manual' }));
+    if ('_floorPlans' in c) out.floorPlans = lines(c._floorPlans).map(l => { const [name, beds, baths, sqft, notes] = l.split('|').map(x => x.trim()); return { name, beds: beds ? Number(beds) || beds : null, baths: baths ? Number(baths) || baths : null, sqft: sqft ? Number(sqft) || sqft : null, notes: notes || '' }; });
+    for (const k of Object.keys(out)) if (k.startsWith('_')) delete out[k];
+    out.updatedAt = stamp();
+    try { await S.db.doc('communities/' + id).set(out); toast('Community saved.'); } catch (e) { toast('Could not save. Try again.', true); }
+  };
+
+  main.append(h('div', { class: 'split' },
+    h('section', { class: 'panel' },
+      h('div', { class: 'toolbar' },
+        h('span', { class: 'avatar', style: c.logoAssetId ? { backgroundImage: `url(${blob(c.logoAssetId)})`, backgroundColor: '#fff' } : { background: c.color || 'var(--navy)' } }, c.logoAssetId ? '' : (c.short || '')),
+        h('h2', { text: c.name || 'Untitled community' })),
+      h('div', { class: 'harvest' },
+        h('span', { class: 'state ' + hvState[0], text: hvState[1] }),
+        hv.lastRun ? h('span', { class: 'src', text: 'Last read ' + new Date(hv.lastRun).toLocaleDateString() }) : null,
+        hv.note ? h('span', { class: 'small', text: hv.note }) : null,
+        h('span', { class: 'spacer' }),
+        !ro && c.website ? h('button', { class: 'btn', onclick: async () => { await S.db.doc('communities/' + id).update({ harvest: { ...hv, status: 'requested', requestedAt: stamp() } }); toast('Refresh requested. Claude reads the website on its next run.'); } }, 'Refresh from website') : null),
+      h('div', { class: 'row' }, fld('Name', 'name'), h('div', { class: 'field', style: { flex: '0 0 110px' } }, h('label', { for: 'c-short', text: 'Short code' }), h('input', { type: 'text', id: 'c-short', maxlength: 3, value: c.short || '', disabled: ro, oninput: e => { c.short = e.target.value.toUpperCase(); } }))),
+      fld('Website (source of truth)', 'website', { type: 'url', placeholder: 'https://' }),
+      h('div', { class: 'row' }, fld('City', 'city'), h('div', { class: 'field', style: { flex: '0 0 90px' } }, h('label', { for: 'c-state', text: 'State' }), h('input', { type: 'text', id: 'c-state', value: c.state || '', disabled: ro, oninput: e => { c.state = e.target.value; } })),
+        h('div', { class: 'field', style: { flex: '0 0 80px' } }, h('label', { for: 'c-color', text: 'Color' }), h('input', { type: 'color', class: 'swatch', id: 'c-color', value: c.color || '#14365c', disabled: ro, oninput: e => { c.color = e.target.value; } }))),
+      h('div', { class: 'row' }, fld('Phone', 'phone'), fld('Address', 'address')),
+      h('div', { class: 'field' }, h('label', { for: 'c-audience', text: 'Audience notes (sets tone only)' }),
+        h('textarea', { id: 'c-audience', rows: 3, disabled: ro, oninput: e => { c.audience = e.target.value; } }, c.audience || ''),
+        h('span', { class: 'hint', text: 'Used to pick tone and topics. Posts never say who should live here.' })),
+      h('div', { class: 'field' }, h('label', { for: 'c-voice', text: 'Community voice notes' }), h('textarea', { id: 'c-voice', rows: 2, disabled: ro, oninput: e => { c.voice = e.target.value; } }, c.voice || '')),
+      h('div', { class: 'row' },
+        h('div', { class: 'field' }, h('label', { for: 'c-corner', text: 'Default badge corner' }), h('select', { id: 'c-corner', disabled: ro, onchange: e => { c.defaultCorner = e.target.value; } },
+          h('option', { value: 'tr', selected: c.defaultCorner !== 'tl' }, 'Top right'), h('option', { value: 'tl', selected: c.defaultCorner === 'tl' }, 'Top left'))),
+        h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Logo for badge' }),
+          S.assets && !ro ? h('button', { class: 'btn', onclick: () => logoIn.click() }, c.logoAssetId ? 'Replace logo' : 'Upload logo') : h('span', { class: 'small muted', text: c.logoAssetId ? 'Logo on file' : 'Using short code' }), logoIn)),
+      !ro ? h('div', { class: 'toolbar' }, h('span', { class: 'spacer' }), h('button', { class: 'btn primary', onclick: save }, 'Save community')) : null),
+    h('section', { class: 'panel' },
+      h('div', null, h('h2', { text: 'From the website' }), h('p', { class: 'small muted', text: 'Claude fills these from the community website on each refresh. You can correct them here; the next refresh will flag any differences.' })),
+      area('Amenities (one per line)', 'amenities', (c.amenities || []).join('\n'), null, 6),
+      area('Floor plans (Name | beds | baths | sq ft | notes)', 'floorPlans', (c.floorPlans || []).map(f => [f.name, f.beds, f.baths, f.sqft, f.notes].map(x => x ?? '').join(' | ').replace(/( \| )+$/, '')).join('\n'), 'Example: The Aspen | 2 | 2 | 1100 | den, attached garage', 4),
+      area('Current specials (one per line)', 'specials', (c.specials || []).map(s => s.text).join('\n'), (c.specials || []).some(s => s.seenAt) ? 'Seen on website: ' + (c.specials || []).filter(s => s.seenAt).map(s => new Date(s.seenAt).toLocaleDateString()).join(', ') : 'Posts that mention a special are re-checked against the website before publishing.', 3),
+      area('Neighborhood (one per line)', 'neighborhood', (c.neighborhood || []).join('\n'), null, 3),
+      h('div', { class: 'field' }, h('span', { class: 'lbl', text: `Photo & video library (${media.length})` }),
+        h('div', { class: 'media-grid' },
+          media.map(([, m]) => h('div', { class: 'media-tile', title: m.caption || '', style: m.kind === 'video' ? {} : { backgroundImage: `url(${blob(m.assetId)})` } }, m.kind === 'video' ? h('span', { class: 'vid', text: 'VIDEO' }) : null)),
+          S.assets && !ro ? h('button', { class: 'media-tile upload-tile', onclick: () => fileIn.click() }, '+ Add') : null, fileIn),
+        h('span', { class: 'hint', text: 'Website photos are added here automatically on each refresh. You can also upload your own.' })),
+      !ro ? h('div', { class: 'toolbar' }, h('span', { class: 'spacer' }), h('button', { class: 'btn primary', onclick: save }, 'Save community')) : null)));
+}
+function addCommunity() {
+  const name = h('input', { type: 'text', id: 'nc-name', placeholder: 'e.g. Whethersfield' });
+  const site = h('input', { type: 'url', id: 'nc-site', placeholder: 'https://' });
+  modal({ title: 'Add a community', body: h('div', { class: 'stack' },
+      h('div', { class: 'field' }, h('label', { for: 'nc-name', text: 'Name' }), name),
+      h('div', { class: 'field' }, h('label', { for: 'nc-site', text: 'Website' }), site, h('span', { class: 'hint', text: 'Claude reads this site to fill in the profile.' }))),
+    actions: [{ label: 'Cancel' }, { label: 'Add', primary: true, onClick: async () => {
+      if (!name.value.trim()) { name.focus(); return true; }
+      const short = name.value.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 3).toUpperCase();
+      const ref = await S.db.collection('communities').add({ name: name.value.trim(), short, website: site.value.trim(), color: '#14365c', active: true, defaultCorner: 'tr',
+        amenities: [], floorPlans: [], specials: [], neighborhood: [], harvest: { status: site.value.trim() ? 'requested' : 'none', requestedAt: stamp() }, updatedAt: stamp() });
+      S.editCommunity = ref.id; toast('Community added.');
+    } }] });
+}
+
+// ---------- render: settings ----------
+function renderSettings(main) {
+  const st = JSON.parse(JSON.stringify(S.settings || {}));
+  const ro = !S.canWrite;
+  st.mix = st.mix || { amenity: 3, floorplan: 2, holiday: 2, funday: 2, video: 1 };
+  const mixRows = Object.keys(st.mix).map(k => {
+    const out = h('span', { class: 'mono', text: st.mix[k] });
+    return h('div', { class: 'mix-row' }, h('label', { for: 'mix-' + k, style: { display: 'flex', gap: '6px', alignItems: 'center' } }, h('i', { class: 'tdot', style: { background: typeColor(k) } }), (TYPES[k] || TYPES.other).label),
+      h('input', { type: 'range', id: 'mix-' + k, min: 0, max: 5, value: st.mix[k], disabled: ro, oninput: e => { st.mix[k] = Number(e.target.value); out.textContent = e.target.value; } }), out);
+  });
+  const save = async () => { try { await S.db.doc('settings/brand').set({ ...st, updatedAt: stamp() }); toast('Settings saved.'); } catch (e) { toast('Could not save settings.', true); } };
+  const pub = st.publishing || {};
+  const line = (ok, label, note) => h('div', { class: 'status-line' }, h('span', { class: 'dot ' + (ok === true ? 'ok' : ok === 'warn' ? 'warn' : 'bad') }), h('b', { text: label }), h('span', { class: 'muted small', text: note }));
+  main.append(h('div', { class: 'toolbar' }, h('h1', { class: 'month-title', text: 'Settings' })));
+  main.append(h('div', { class: 'split' },
+    h('section', { class: 'panel' }, h('h2', { text: 'Brand & content' }),
+      h('div', { class: 'field' }, h('label', { for: 's-company', text: 'Company' }), h('input', { type: 'text', id: 's-company', value: st.company || 'Beacon Management', disabled: ro, oninput: e => { st.company = e.target.value; } })),
+      h('div', { class: 'field' }, h('label', { for: 's-voice', text: 'Company voice' }), h('textarea', { id: 's-voice', rows: 4, disabled: ro, oninput: e => { st.voice = e.target.value; } }, st.voice || '')),
+      h('div', { class: 'row' },
+        h('div', { class: 'field' }, h('label', { for: 's-cad', text: 'Posts per week' }), h('input', { type: 'text', id: 's-cad', value: st.cadence || '3-4', disabled: ro, oninput: e => { st.cadence = e.target.value; } })),
+        h('div', { class: 'field' }, h('label', { for: 's-time', text: 'Default post time' }), h('input', { type: 'time', id: 's-time', value: st.defaultTime || '10:00', disabled: ro, oninput: e => { st.defaultTime = e.target.value; } }))),
+      h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Content mix' }), h('div', { class: 'stack', style: { gap: '6px' } }, mixRows)),
+      h('label', { class: 'checks' }, h('input', { type: 'checkbox', id: 's-eho', checked: st.eho !== false, disabled: ro, onchange: e => { st.eho = e.target.checked; } }), 'Add “Equal Housing Opportunity” to every image'),
+      h('div', { class: 'field' }, h('label', { for: 's-extra', text: 'Extra phrases to flag (one per line)' }),
+        h('textarea', { id: 's-extra', rows: 3, disabled: ro, oninput: e => { st.extraPhrases = lines(e.target.value); } }, (st.extraPhrases || []).join('\n')),
+        h('span', { class: 'hint', text: 'Added to the built-in fair housing list. Flags are for review and are not legal advice.' })),
+      !ro ? h('div', { class: 'toolbar' }, h('span', { class: 'spacer' }), h('button', { class: 'btn primary', onclick: save }, 'Save settings')) : null),
+    h('section', { class: 'panel' }, h('h2', { text: 'Publishing' }),
+      h('p', { class: 'small muted', text: 'An hourly Claude task posts approved items when their time arrives, re-checking specials against the website first.' }),
+      h('div', { class: 'stack', style: { gap: '8px' } },
+        line(pub.meta === 'connected' ? true : pub.meta === 'pending' ? 'warn' : false, 'Facebook & Instagram', pub.meta === 'connected' ? 'Connected through Meta Business Manager' : pub.meta === 'pending' ? 'App review in progress' : 'Not connected'),
+        line(pub.google === 'connected' ? true : pub.google === 'pending' ? 'warn' : false, 'Google Business Profile', pub.google === 'connected' ? 'Connected' : pub.google === 'pending' ? 'API access requested' : 'Not connected'),
+        line(pub.harvester === 'on' ? true : false, 'Website reader', pub.harvester === 'on' ? 'Runs weekly and on request' : 'Not scheduled yet'),
+        line(pub.publisher === 'on' ? true : false, 'Hourly publisher', pub.publisher === 'on' ? 'Running' : 'Not scheduled yet')),
+      h('h3', { text: 'To turn on auto-posting' }),
+      h('ol', { class: 'steps small' },
+        h('li', { text: 'Create a Meta developer app owned by your Business Manager and request Pages and Instagram publishing permissions.' }),
+        h('li', { text: 'Request Google Business Profile API access for your Google organization.' }),
+        h('li', { text: 'Add the tokens as secrets in the Claude environment that runs the publisher.' }),
+        h('li', { text: 'Ask Claude to schedule the hourly publisher and the weekly website reader.' })))));
+}
+
+// ---------- events ----------
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { S.view = t.dataset.view; if (S.view === 'communities' && S.community !== 'all') S.editCommunity = S.community; renderAll(); }));
+init();
+})();
+</script>

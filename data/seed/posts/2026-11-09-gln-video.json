@@ -1,0 +1,25 @@
+{
+ "communityId": "glens-of-bloomfield",
+ "date": "2026-11-09",
+ "time": "10:00",
+ "type": "video",
+ "title": "Video walkthrough",
+ "caption": "Take a walk with us \ud83c\udfa5 Here's a quick look around Glens of Bloomfield, from the front door to [featured space]. Want the real thing? Schedule a tour at the link in bio.",
+ "gbpCaption": "",
+ "hashtags": "#LiveAtGlens #GlensOfBloomfield #BloomfieldMI #MichiganLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": ""
+ },
+ "status": "draft",
+ "needsData": "Upload the walkthrough video (vertical, under 90 seconds works best for Reels).",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

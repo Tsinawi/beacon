@@ -1,0 +1,25 @@
+{
+ "communityId": "glens-of-bloomfield",
+ "date": "2026-11-26",
+ "time": "10:00",
+ "type": "holiday",
+ "title": "Thanksgiving",
+ "caption": "Happy Thanksgiving from all of us at Glens of Bloomfield! We're grateful for the residents and neighbors who make this community home. Wishing you a warm and restful day.",
+ "gbpCaption": "",
+ "hashtags": "#HappyThanksgiving #Grateful #GlensOfBloomfield #BloomfieldMI",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "Happy Thanksgiving"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

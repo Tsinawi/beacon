@@ -1,0 +1,25 @@
+{
+ "communityId": "glens-of-bloomfield",
+ "date": "2026-11-02",
+ "time": "10:00",
+ "type": "amenity",
+ "title": "Amenity spotlight",
+ "caption": "Monday plans: [amenity] \ud83c\udf42 Whether you're winding down after work or starting the week fresh, [one detail about the amenity] is right here at Glens of Bloomfield. Come see it in person. Schedule a tour at the link in bio.",
+ "gbpCaption": "",
+ "hashtags": "#LiveAtGlens #GlensOfBloomfield #BloomfieldMI #MichiganLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": true
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": ""
+ },
+ "status": "draft",
+ "needsData": "Which amenity to feature, plus a photo of it. Will fill in once the website is read.",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

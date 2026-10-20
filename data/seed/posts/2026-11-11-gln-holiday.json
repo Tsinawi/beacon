@@ -1,0 +1,25 @@
+{
+ "communityId": "glens-of-bloomfield",
+ "date": "2026-11-11",
+ "time": "10:00",
+ "type": "holiday",
+ "title": "Veterans Day",
+ "caption": "Today we honor the veterans who have served our country, including those in our own Glens of Bloomfield community. Thank you for your service and sacrifice.",
+ "gbpCaption": "",
+ "hashtags": "#VeteransDay #ThankYouVeterans #GlensOfBloomfield #BloomfieldMI",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "Thank you, veterans"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

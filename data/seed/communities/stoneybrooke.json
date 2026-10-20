@@ -1,0 +1,24 @@
+{
+ "name": "Stoneybrooke",
+ "short": "STB",
+ "website": "https://stoneybrookecanton.com/",
+ "city": "Canton",
+ "state": "MI",
+ "color": "#4b6584",
+ "active": true,
+ "defaultCorner": "tr",
+ "audience": "",
+ "voice": "",
+ "phone": "",
+ "address": "",
+ "amenities": [],
+ "floorPlans": [],
+ "specials": [],
+ "neighborhood": [],
+ "harvest": {
+  "status": "error",
+  "lastRun": "2026-10-16T19:00:00Z",
+  "note": "The website address did not resolve (DNS not found). Check the URL."
+ },
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

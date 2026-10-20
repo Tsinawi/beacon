@@ -1,0 +1,25 @@
+{
+ "communityId": "stoneybrooke",
+ "date": "2026-11-26",
+ "time": "10:00",
+ "type": "holiday",
+ "title": "Thanksgiving",
+ "caption": "Happy Thanksgiving from the Stoneybrooke team! Wishing you a day full of good food and good company.",
+ "gbpCaption": "",
+ "hashtags": "#HappyThanksgiving #Grateful #Stoneybrooke #CantonMI",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "Happy Thanksgiving"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

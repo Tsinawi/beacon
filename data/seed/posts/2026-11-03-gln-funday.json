@@ -1,0 +1,25 @@
+{
+ "communityId": "glens-of-bloomfield",
+ "date": "2026-11-03",
+ "time": "10:00",
+ "type": "funday",
+ "title": "National Sandwich Day",
+ "caption": "Happy National Sandwich Day! \ud83e\udd6a Settle a debate for us: what's the best sandwich in the Bloomfield area? Drop your favorite spot in the comments. We're taking notes for our next lunch run.",
+ "gbpCaption": "",
+ "hashtags": "#LiveAtGlens #GlensOfBloomfield #BloomfieldMI #MichiganLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "National Sandwich Day"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

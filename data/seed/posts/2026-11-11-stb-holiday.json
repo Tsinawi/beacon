@@ -1,0 +1,25 @@
+{
+ "communityId": "stoneybrooke",
+ "date": "2026-11-11",
+ "time": "10:00",
+ "type": "holiday",
+ "title": "Veterans Day",
+ "caption": "On Veterans Day, Stoneybrooke honors everyone who has served, including the veterans who are part of our community. Thank you.",
+ "gbpCaption": "",
+ "hashtags": "#VeteransDay #ThankYouVeterans #Stoneybrooke #CantonMI",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "Thank you, veterans"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

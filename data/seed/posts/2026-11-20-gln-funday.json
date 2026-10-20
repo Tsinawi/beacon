@@ -1,0 +1,25 @@
+{
+ "communityId": "glens-of-bloomfield",
+ "date": "2026-11-20",
+ "time": "10:00",
+ "type": "funday",
+ "title": "Cozy fall weekend",
+ "caption": "Cozy season is officially here \ud83c\udf42 Blankets, a warm drink and a good show. What's on your weekend watch list? Share your pick below.",
+ "gbpCaption": "",
+ "hashtags": "#LiveAtGlens #GlensOfBloomfield #BloomfieldMI #MichiganLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "Cozy season"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

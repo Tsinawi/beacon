@@ -1,0 +1,25 @@
+{
+ "communityId": "stoneybrooke",
+ "date": "2026-11-24",
+ "time": "10:00",
+ "type": "funday",
+ "title": "Thank you, residents",
+ "caption": "This week we're feeling extra grateful for the residents who make Stoneybrooke such a great place to come home to. Thank you for being part of our community. \ud83d\udc9b",
+ "gbpCaption": "",
+ "hashtags": "#Stoneybrooke #CantonMI #MichiganLiving #ApartmentLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "Thank you, residents"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

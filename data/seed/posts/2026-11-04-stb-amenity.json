@@ -1,0 +1,25 @@
+{
+ "communityId": "stoneybrooke",
+ "date": "2026-11-04",
+ "time": "10:00",
+ "type": "amenity",
+ "title": "Amenity spotlight",
+ "caption": "Midweek break? [Amenity] at Stoneybrooke is ready when you are. [One detail about it.] Schedule a tour at the link in bio.",
+ "gbpCaption": "",
+ "hashtags": "#Stoneybrooke #CantonMI #MichiganLiving #ApartmentLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": true
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": ""
+ },
+ "status": "draft",
+ "needsData": "Which amenity to feature, plus a photo of it. Will fill in once the website is read.",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

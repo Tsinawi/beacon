@@ -1,0 +1,25 @@
+{
+ "communityId": "stoneybrooke",
+ "date": "2026-11-12",
+ "time": "10:00",
+ "type": "video",
+ "title": "Video walkthrough",
+ "caption": "Take a quick tour of Stoneybrooke \ud83c\udfa5 From [featured space] to [second space], here's a look around. Like what you see? Schedule a visit at the link in bio.",
+ "gbpCaption": "",
+ "hashtags": "#Stoneybrooke #CantonMI #MichiganLiving #ApartmentLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": ""
+ },
+ "status": "draft",
+ "needsData": "Upload the walkthrough video (vertical, under 90 seconds works best for Reels).",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

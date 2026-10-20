@@ -1,0 +1,25 @@
+{
+ "communityId": "glens-of-bloomfield",
+ "date": "2026-11-13",
+ "time": "10:00",
+ "type": "funday",
+ "title": "World Kindness Day",
+ "caption": "It's World Kindness Day \ud83d\udc9b Hold a door, leave a kind note, or say hi to a neighbor on your way out. Small things add up. What's the nicest thing a neighbor has done for you?",
+ "gbpCaption": "",
+ "hashtags": "#LiveAtGlens #GlensOfBloomfield #BloomfieldMI #MichiganLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "World Kindness Day"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

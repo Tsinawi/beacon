@@ -1,0 +1,24 @@
+{
+ "name": "Glens of Bloomfield",
+ "short": "GLN",
+ "website": "https://www.liveatglens.com/",
+ "city": "",
+ "state": "MI",
+ "color": "#2f5d46",
+ "active": true,
+ "defaultCorner": "tr",
+ "audience": "",
+ "voice": "",
+ "phone": "",
+ "address": "",
+ "amenities": [],
+ "floorPlans": [],
+ "specials": [],
+ "neighborhood": [],
+ "harvest": {
+  "status": "error",
+  "lastRun": "2026-10-16T19:00:00Z",
+  "note": "The website address did not resolve (DNS not found). Check the URL."
+ },
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

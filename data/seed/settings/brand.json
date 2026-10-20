@@ -1,0 +1,22 @@
+{
+ "company": "Beacon Management",
+ "voice": "Warm, upbeat and neighborly. Plain language and short sentences. Celebrate community moments and invite people to come see the community. One or two emoji at most.",
+ "cadence": "3-4",
+ "defaultTime": "10:00",
+ "mix": {
+  "amenity": 3,
+  "floorplan": 2,
+  "holiday": 2,
+  "funday": 2,
+  "video": 1
+ },
+ "eho": true,
+ "extraPhrases": [],
+ "publishing": {
+  "meta": "none",
+  "google": "none",
+  "harvester": "off",
+  "publisher": "off"
+ },
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

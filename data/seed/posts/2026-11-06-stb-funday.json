@@ -1,0 +1,25 @@
+{
+ "communityId": "stoneybrooke",
+ "date": "2026-11-06",
+ "time": "10:00",
+ "type": "funday",
+ "title": "National Nachos Day",
+ "caption": "Happy National Nachos Day! \ud83e\uddc0 Loaded, classic, or extra jalape\u00f1os? Tell us your go-to order and your favorite spot around Canton.",
+ "gbpCaption": "",
+ "hashtags": "#Stoneybrooke #CantonMI #MichiganLiving #ApartmentLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "National Nachos Day"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

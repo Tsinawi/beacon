@@ -1,0 +1,25 @@
+{
+ "communityId": "stoneybrooke",
+ "date": "2026-11-28",
+ "time": "10:00",
+ "type": "funday",
+ "title": "Small Business Saturday",
+ "caption": "Shop small this Small Business Saturday \ud83d\udecd\ufe0f What's your favorite local business in Canton? Share it below and help your neighbors discover something new.",
+ "gbpCaption": "",
+ "hashtags": "#Stoneybrooke #CantonMI #MichiganLiving #ApartmentLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "Shop Small Saturday"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}

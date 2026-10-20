@@ -1,0 +1,25 @@
+{
+ "communityId": "glens-of-bloomfield",
+ "date": "2026-11-28",
+ "time": "10:00",
+ "type": "funday",
+ "title": "Small Business Saturday",
+ "caption": "It's Small Business Saturday! \ud83d\udecd\ufe0f Shopping local keeps our neighborhood vibrant. Tell us your favorite local shop or restaurant near Glens of Bloomfield and we'll share the love.",
+ "gbpCaption": "",
+ "hashtags": "#LiveAtGlens #GlensOfBloomfield #BloomfieldMI #MichiganLiving",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "assetId": null,
+ "mediaKind": null,
+ "overlay": {
+  "corner": "tr",
+  "label": "Shop Small Saturday"
+ },
+ "status": "draft",
+ "needsData": "",
+ "createdBy": "claude",
+ "updatedAt": "2026-10-16T19:00:00Z"
+}
