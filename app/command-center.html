@@ -1078,7 +1078,7 @@ COMMUNITY VOICE NOTES: ${c.voice || '(none)'}
 AMENITIES (from website): ${(c.amenities || []).join('; ') || '(none on file)'}
 FLOOR PLANS (from website):
 ${fp}
-CURRENT SPECIALS (from website): ${(c.specials || []).map(s => s.text).join('; ') || '(none on file)'}
+CURRENT SPECIALS (from website; only mention one in a post dated on or before its end date): ${(c.specials || []).filter(s => !s.endsOn || s.endsOn >= ds(today)).map(s => s.text + (s.endsOn ? ` (ends ${s.endsOn})` : '')).join('; ') || '(none on file)'}
 NEIGHBORHOOD (from website): ${(c.neighborhood || []).join('; ') || '(none on file)'}`;
 }
 const RULES = `RULES:

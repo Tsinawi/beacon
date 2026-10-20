@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node tools/read_site.js:*)",
+      "Bash(NODE_PATH=$(npm root -g) node tools/read_site.js:*)",
+      "Bash(python3 tools/import_photos.py:*)",
+      "Bash(python3 -I tools/import_photos.py:*)",
+      "ArtifactData",
+      "Artifact"
+    ]
+  }
+}
