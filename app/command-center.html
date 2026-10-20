@@ -370,7 +370,7 @@ const FH_RULES = [
   { re: /\bfamil(y|ies)[- ]?(friendly|oriented)?\b/i, why: 'Familial status is protected. Describe the property, not who should live there.' },
   { re: /\b(kids?|children|child)\b/i, why: 'References to children can imply familial-status preference.' },
   { re: /\b(adults? only|adult community|no kids|mature (residents|adults|individuals))\b/i, why: 'Excludes families with children.' },
-  { re: /\b(empty[- ]nesters?|singles?|couples?|bachelors?|newlyweds?)\b/i, why: 'Describes a type of household. Describe amenities instead.' },
+  { re: /\b(empty[- ]nesters?|singles|single (people|persons?|adults?|residents?|professionals?)|couples|(?<!\ba )couple(?! of)|bachelors?|newlyweds?)\b/i, why: 'Describes a type of household. Describe amenities instead.' },
   { re: /\b(young professionals?|millennials?|retirees?|seniors?|elderly|students?)\b/i, why: 'Targets an age group or household type.' },
   { re: /\b(perfect|ideal|great) for (you and )?(your )?\w+/i, why: '"Perfect for ___" phrasing often implies who should live there. Check the noun.' },
   { re: /\b(exclusive|private community|restricted|integrated|ethnic|traditional neighborhood)\b/i, why: 'Can signal exclusion of protected classes.' },

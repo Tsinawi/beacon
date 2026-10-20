@@ -4,8 +4,12 @@ Runs on the 18th of each month (scheduled task "Beacon monthly drafts"), so next
 
 - Command center: https://claude.ai/artifact/G626QaLTCbynVtY1WMb7wj
 - Database: read and write it with the `ArtifactData` tool (load it with ToolSearch). Read the artifact once with the `Artifact` tool (`action: "read"`) before uploading photos to it.
-- Target month: the calendar month after the run date, unless the prompt names one.
+- Target month: the calendar month after the run date, unless the prompt names one. Decide the target month before doing anything else, and run the whole procedure once, for that month only.
 - Time zone: America/Detroit.
+
+**Setup notes from earlier runs.**
+- If the `add_repo` tool is missing, clone with `git clone https://github.com/Tsinawi/beacon`.
+- If `python3 -c "import PIL"` fails, create a virtual environment and install Pillow there before running `tools/import_photos.py`.
 
 Work through every active community (`communities` where `active != false`). Keep going if one community fails; report it at the end.
 
@@ -57,17 +61,18 @@ Read `settings/brand` (voice, cadence, mix, timeSlots) and every post for the co
 - If approved or posted posts already exist in the target month, keep them and plan around them.
 - If drafts already exist, leave them. Only fill weeks that have fewer posts than the cadence.
 
-Plan 3–4 posts per week (Monday–Sunday weeks that start in the target month), spread over different weekdays, following the content mix:
+Plan 3–4 posts per week, spread over different weekdays, following the content mix. Every post date must fall inside the target month. A week that runs into the next month gets only the posts dated in this month; the next run covers the rest.
 - **Holiday:** real holidays in the month.
 - **Fun day:** widely known national days and seasonal moments. No politics, religion or elections.
 - **Amenity:** one amenity per post.
 - **Floor plan:** one plan per post.
 - **Video tour:** while Reels from photos are not built yet, write the caption and set `needsData: "Upload the walkthrough video (vertical, under 90 seconds works best for Reels)."`
 
-**Fresh content first.**
+**Fresh content first. No repeats inside 3 months.**
 - Prefer amenities, floor plans and photos that are new this month or have not appeared in the last 4 months.
-- Repeat an amenity, plan or photo used 3–4 months ago only when nothing fresh is left, and write a new caption for it.
-- Never use the same photo twice in one month for the same community.
+- Don't feature the same amenity or floor plan, or use the same photo, if the community posted it in the 3 months before the target month or earlier in the target month.
+- When fresh amenity or floor plan topics run out, fill those slots with fun days, seasonal moments or neighborhood posts drawn from the profile instead of repeating. The content mix is a target, not a quota.
+- Once something is more than 3 months old, it can come back with a new caption and, when there is one, a different photo.
 
 **Writing rules.** These are the same as the command center's generator:
 - Fair housing: never describe who the ideal resident is. Don't mention families, children, age groups, students, singles, couples, religion, national origin, disability, or "safe neighborhood". Describe the property, amenities and events. Say "primary bedroom".
