@@ -20,7 +20,7 @@ The community website is the source of truth. There is no PMS integration.
 ## Data model
 
 - `communities/{slug}`: `name, short, hashtagSet, links{home,floorplans,amenities,tour,gallery,neighborhood} (tracked URLs), logoTone (auto|original|white|black), website, city, state, color, audience, voice, phone, address, amenities[], floorPlans[{name,beds,baths,sqft,notes}], specials[{text,seenAt,source}], neighborhood[], logoAssetId, defaultCorner, active, harvest{status,lastRun,note,requestedAt}`
-- `posts/{id}`: `communityId, date (YYYY-MM-DD), time (HH:MM, rotated from settings.timeSlots), type (amenity|floorplan|holiday|funday|video|special|other), title, caption, gbpCaption, hashtags, linkKey (home|floorplans|amenities|tour|gallery|neighborhood|"" — defaults by type when absent), platforms{facebook,instagram,google}, assetId, mediaKind (image|video), overlay{corner,label}, status (draft|approved|posted|held|failed), needsData, finalAssetId (4:5, 1080×1350), finalGoogleAssetId (4:3, 1200×900), approvedAt, postedAt, error, createdBy`
+- `posts/{id}`: `communityId, date (YYYY-MM-DD), time (HH:MM, rotated from settings.timeSlots), type (amenity|floorplan|holiday|funday|video|special|other), title, caption, gbpCaption, hashtags, linkKey (home|floorplans|amenities|tour|gallery|neighborhood|"" — defaults by type when absent), platforms{facebook,instagram,google}, assetId, mediaKind (image|video), overlay{corner,label,icon,iconLabel}, status (draft|approved|posted|held|failed), needsData, finalAssetId (4:5, 1080×1350), finalGoogleAssetId (4:3, 1200×900), approvedAt, postedAt, error, createdBy`
 - `media/{id}`: `communityId, assetId, kind, caption, source (website|upload|onedrive), addedAt`
 - `settings/brand`: `company, voice, cadence, timeSlots[], mix{type: weight}, eho, extraPhrases[], publishing{meta,google,harvester,publisher}`
 
@@ -39,3 +39,7 @@ Access rules: anyone the page is shared with can read; only Editors and the owne
 ## Seed data
 
 `data/seed/` holds the documents first loaded into the database: two pilot communities, brand settings and November 2026 drafts.
+
+## Credits
+
+Amenity icons are from [Lucide](https://lucide.dev), ISC License, Copyright (c) Lucide Icons and Contributors.

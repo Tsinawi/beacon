@@ -357,6 +357,34 @@ const TYPES = {
 };
 const BRAND = { blue: '#153a58', teal: '#55c1c7', coral: '#ee8f80', tan: '#f6ecd6', logo: 'b03616ee219788d7514c6e86e73656b4', logoWhite: 'd04578bbf195e2568cfe504c34a3582a' };
 const FORMATS = { feed: { w: 1080, h: 1350, label: '4:5 · Facebook & Instagram' }, google: { w: 1200, h: 900, label: '4:3 · Google Business' } };
+// Amenity icons from Lucide (https://lucide.dev), ISC License, Copyright (c) Lucide Icons and Contributors.
+const ICONS = {
+  "pool":{"label":"Pool","svg":"<path d=\"M2 12q2.5 2 5 0t5 0 5 0 5 0\" /> <path d=\"M2 19q2.5 2 5 0t5 0 5 0 5 0\" /> <path d=\"M2 5q2.5 2 5 0t5 0 5 0 5 0\" />"},
+  "fitness":{"label":"Fitness center","svg":"<path d=\"M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z\" /> <path d=\"m2.5 21.5 1.4-1.4\" /> <path d=\"m20.1 3.9 1.4-1.4\" /> <path d=\"M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z\" /> <path d=\"m9.6 14.4 4.8-4.8\" />"},
+  "clubhouse":{"label":"Clubhouse","svg":"<path d=\"M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3\" /> <path d=\"M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z\" /> <path d=\"M5 18v2\" /> <path d=\"M19 18v2\" />"},
+  "barkpark":{"label":"Bark park","svg":"<path d=\"M11.25 16.25h1.5L12 17z\" /> <path d=\"M16 14v.5\" /> <path d=\"M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a11.702 11.702 0 0 0-.493-3.309\" /> <path d=\"M8 14v.5\" /> <path d=\"M8.5 8.5c-.384 1.05-1.083 2.028-2.344 2.5-1.931.722-3.576-.297-3.656-1-.113-.994 1.177-6.53 4-7 1.923-.321 3.651.845 3.651 2.235A7.497 7.497 0 0 1 14 5.277c0-1.39 1.844-2.598 3.767-2.277 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5\" />"},
+  "pets":{"label":"Pet-friendly","svg":"<circle cx=\"11\" cy=\"4\" r=\"2\" /> <circle cx=\"18\" cy=\"8\" r=\"2\" /> <circle cx=\"20\" cy=\"16\" r=\"2\" /> <path d=\"M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z\" />"},
+  "playground":{"label":"Playground","svg":"<circle cx=\"12\" cy=\"12\" r=\"2\" /> <path d=\"M12 2v4\" /> <path d=\"m6.8 15-3.5 2\" /> <path d=\"m20.7 7-3.5 2\" /> <path d=\"M6.8 9 3.3 7\" /> <path d=\"m20.7 17-3.5-2\" /> <path d=\"m9 22 3-8 3 8\" /> <path d=\"M8 22h8\" /> <path d=\"M18 18.7a9 9 0 1 0-12 0\" />"},
+  "outdoor":{"label":"Outdoor space","svg":"<path d=\"M10 10v.2A3 3 0 0 1 8.9 16H5a3 3 0 0 1-1-5.8V10a3 3 0 0 1 6 0Z\" /> <path d=\"M7 16v6\" /> <path d=\"M13 19v3\" /> <path d=\"M12 19h8.3a1 1 0 0 0 .7-1.7L18 14h.3a1 1 0 0 0 .7-1.7L16 9h.2a1 1 0 0 0 .8-1.7L13 3l-1.4 1.5\" />"},
+  "picnic":{"label":"Picnic area","svg":"<path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\" /> <path d=\"M7 2v20\" /> <path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\" />"},
+  "balcony":{"label":"Patio & balcony","svg":"<circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.93 4.93 1.41 1.41\" /> <path d=\"m17.66 17.66 1.41 1.41\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.34 17.66-1.41 1.41\" /> <path d=\"m19.07 4.93-1.41 1.41\" />"},
+  "laundry":{"label":"In-home laundry","svg":"<path d=\"M3 6h3\" /> <path d=\"M17 6h.01\" /> <rect width=\"18\" height=\"20\" x=\"3\" y=\"2\" rx=\"2\" /> <circle cx=\"12\" cy=\"13\" r=\"5\" /> <path d=\"M12 18a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5\" />"},
+  "parking":{"label":"Covered parking","svg":"<path d=\"m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8\" /> <path d=\"M7 14h.01\" /> <path d=\"M17 14h.01\" /> <rect width=\"18\" height=\"8\" x=\"3\" y=\"10\" rx=\"2\" /> <path d=\"M5 18v2\" /> <path d=\"M19 18v2\" />"},
+  "kitchen":{"label":"Kitchen","svg":"<path d=\"M2 12h20\" /> <path d=\"M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\" /> <path d=\"m4 8 16-4\" /> <path d=\"m8.86 6.78-.45-1.81a2 2 0 0 1 1.45-2.43l1.94-.48a2 2 0 0 1 2.43 1.46l.45 1.8\" />"},
+  "bedroom":{"label":"Bedroom","svg":"<path d=\"M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8\" /> <path d=\"M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4\" /> <path d=\"M12 4v6\" /> <path d=\"M2 18h20\" />"},
+  "bathroom":{"label":"Bathroom","svg":"<path d=\"M10 4 8 6\" /> <path d=\"M17 19v2\" /> <path d=\"M2 12h20\" /> <path d=\"M7 19v2\" /> <path d=\"M9 5 7.621 3.621A2.121 2.121 0 0 0 4 5v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5\" />"},
+  "living":{"label":"Living room","svg":"<path d=\"M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3\" /> <path d=\"M2 16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z\" /> <path d=\"M4 18v2\" /> <path d=\"M20 18v2\" /> <path d=\"M12 4v9\" />"},
+  "closet":{"label":"Walk-in closet","svg":"<path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\" />"},
+  "coffee":{"label":"Coffee bar","svg":"<path d=\"M10 2v2\" /> <path d=\"M14 2v2\" /> <path d=\"M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1\" /> <path d=\"M6 2v2\" />"},
+  "maintenance":{"label":"24-hour maintenance","svg":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z\" />"},
+  "trash":{"label":"Valet trash","svg":"<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />"},
+  "storage":{"label":"Extra storage","svg":"<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\" /> <path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\" /> <path d=\"M10 12h4\" />"},
+  "ac":{"label":"Central air","svg":"<path d=\"m10 20-1.25-2.5L6 18\" /> <path d=\"M10 4 8.75 6.5 6 6\" /> <path d=\"m14 20 1.25-2.5L18 18\" /> <path d=\"m14 4 1.25 2.5L18 6\" /> <path d=\"m17 21-3-6h-4\" /> <path d=\"m17 3-3 6 1.5 3\" /> <path d=\"M2 12h6.5L10 9\" /> <path d=\"m20 10-1.5 2 1.5 2\" /> <path d=\"M22 12h-6.5L14 15\" /> <path d=\"m4 10 1.5 2L4 14\" /> <path d=\"m7 21 3-6-1.5-3\" /> <path d=\"m7 3 3 6h4\" />"},
+  "fireplace":{"label":"Fireplace","svg":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\" />"},
+  "renovated":{"label":"Renovated homes","svg":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\" /> <path d=\"M20 2v4\" /> <path d=\"M22 4h-4\" /> <circle cx=\"4\" cy=\"20\" r=\"2\" />"},
+  "community":{"label":"Community","svg":"<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />"},
+  "townhome":{"label":"Townhomes","svg":"<path d=\"M10 12h4\" /> <path d=\"M10 8h4\" /> <path d=\"M14 21v-3a2 2 0 0 0-4 0v3\" /> <path d=\"M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2\" /> <path d=\"M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16\" />"}};
+const ICON_WORDS = [['coffee','coffee'],['pool','pool'],['sundeck','pool'],['fitness','fitness'],['gym','fitness'],['bark','barkpark'],['dog park','barkpark'],['pet','pets'],['clubhouse','clubhouse'],['playground','playground'],['picnic','picnic'],['balcon','balcony'],['patio','balcony'],['washer','laundry'],['laundry','laundry'],['parking','parking'],['garage','parking'],['kitchen','kitchen'],['bedroom','bedroom'],['bath','bathroom'],['closet','closet'],['fireplace','fireplace'],['living','living'],['maintenance','maintenance'],['trash','trash'],['storage','storage'],['central air','ac'],['air condition','ac'],['renovat','renovated'],['townhome','townhome'],['multilevel','townhome'],['grounds','outdoor'],['outdoor','outdoor']];
 const DEFAULT_SLOTS = ['10:00', '11:00', '12:00', '13:00', '14:00'];
 const LINKS = { home: 'Home page', floorplans: 'Floor plans', amenities: 'Amenities', tour: 'Schedule a tour', gallery: 'Photo gallery', neighborhood: 'Neighborhood' };
 const LINK_FOR_TYPE = { amenity: 'amenities', floorplan: 'floorplans', video: 'tour', special: 'home', holiday: 'home', funday: 'home', other: 'home' };
@@ -556,6 +584,7 @@ async function drawComposite(canvas, p, fmt = 'feed') {
     ctx.restore();
   }
   const pad = 70 * k;
+  let labelTop = null;
   const label = String(p.overlay?.label || '').trim();
   if (label) {
     const g2 = ctx.createLinearGradient(0, H*0.45, 0, H);
@@ -566,11 +595,29 @@ async function drawComposite(canvas, p, fmt = 'feed') {
     ctx.font = `800 ${fs}px "Schibsted Grotesk", Arial, sans-serif`;
     const ls = wrapText(ctx, label, W - 2 * pad).slice(0, 3);
     let y = H - 120 * k - (ls.length - 1) * lhgt;
+    labelTop = y - 120 * k;
     ctx.fillStyle = p.type === 'holiday' ? BRAND.coral : BRAND.teal; ctx.fillRect(pad, y - 120 * k, 90 * k, 10 * k);
     ctx.fillStyle = '#ffffff';
     for (const l of ls) { ctx.fillText(l, pad, y); y += lhgt; }
     ctx.font = `700 ${30 * k}px "Schibsted Grotesk", Arial, sans-serif`; ctx.fillStyle = BRAND.tan;
     ctx.fillText(String(c.name || '').toUpperCase(), pad + 2, H - 60 * k); ctx.fillStyle = '#ffffff';
+  }
+  // amenity icon chip, bottom left (above the headline when there is one)
+  const icon = iconFor(p);
+  if (icon) {
+    const text = String(p.overlay?.iconLabel || ICONS[icon].label).trim();
+    const d = 84 * k, ch = 64 * k, x0 = 40 * k;
+    const bottom = labelTop != null ? labelTop - 24 * k : H - 40 * k;
+    const cy = bottom - d / 2;
+    ctx.font = `700 ${28 * k}px "Schibsted Grotesk", Arial, sans-serif`;
+    const tw = text ? Math.min(ctx.measureText(text).width, W * 0.55) : 0;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.3)'; ctx.shadowBlur = 16 * k; ctx.shadowOffsetY = 4 * k;
+    if (text) { ctx.fillStyle = 'rgba(21,58,88,.92)'; rr(ctx, x0 + d / 2, cy - ch / 2, d / 2 + 22 * k + tw + 28 * k, ch, ch / 2); ctx.fill(); }
+    ctx.fillStyle = BRAND.teal; ctx.beginPath(); ctx.arc(x0 + d / 2, cy, d / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    try { const ii = await iconImage(icon, '#ffffff'); const is = d * 0.56; ctx.drawImage(ii, x0 + d / 2 - is / 2, cy - is / 2, is, is); } catch (e) {}
+    if (text) { ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle'; ctx.fillText(text, x0 + d + 22 * k, cy + 1, W * 0.55); ctx.textBaseline = 'alphabetic'; }
   }
   // corner logo: the community's own transparent logo straight on the image; boxed short code when there is none
   const corner = p.overlay?.corner || c.defaultCorner || 'tr';
@@ -611,6 +658,30 @@ async function drawComposite(canvas, p, fmt = 'feed') {
   }
 }
 
+function mediaFor(p) { return p.assetId ? Object.values(S.media).find(x => x.assetId === p.assetId) : null; }
+// The amenity icon for a post: set by hand in the editor, or picked from the post title and photo for amenity posts.
+function iconFor(p) {
+  const chosen = p.overlay?.icon;
+  if (chosen === 'none') return null;
+  if (chosen && ICONS[chosen]) return chosen;
+  if (p.type !== 'amenity' || !p.assetId || p.mediaKind === 'video' || isFlyer(p)) return null;
+  const m = mediaFor(p) || {};
+  for (const text of [p.title, (m.tag || '') + ' ' + (m.caption || '')]) {
+    const t = String(text || '').toLowerCase();
+    const hit = ICON_WORDS.find(([w]) => t.includes(w));
+    if (hit) return hit[1];
+  }
+  return null;
+}
+const iconCache = new Map();
+function iconImage(key, color) {
+  const id = key + color;
+  if (!iconCache.has(id)) iconCache.set(id, new Promise((res, rej) => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[key].svg}</svg>`;
+    const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }));
+  return iconCache.get(id);
+}
 function isFlyer(p) {
   if (!p.assetId) return false;
   const m = Object.values(S.media).find(x => x.assetId === p.assetId);
@@ -982,6 +1053,14 @@ function renderDrawer() {
       h('div', { class: 'row', style: { flexWrap: 'nowrap' } }, rewriteIn, h('button', { class: 'btn', disabled: D.rewriting, onclick: () => rewrite(rewriteIn.value) }, D.rewriting ? 'Writing…' : 'Rewrite'))) : null,
     h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Photo or video' }), mediaGrid,
       h('span', { class: 'hint', text: mediaItems.length ? 'Photos come from this community’s library.' : 'This community has no photos yet. Upload here, or add them on the Communities tab.' })),
+    p.assetId && p.mediaKind !== 'video' && !isFlyer(p) ? h('div', { class: 'row' },
+      h('div', { class: 'field' }, h('label', { for: 'pe-icon', text: 'Amenity icon' }),
+        h('select', { id: 'pe-icon', disabled: ro, onchange: e => { p.overlay = { ...p.overlay, icon: e.target.value || undefined }; renderDrawer(); } },
+          h('option', { value: '', selected: !p.overlay?.icon }, 'Auto' + (p.overlay?.icon ? '' : (iconFor(p) ? ` (${ICONS[iconFor(p)].label})` : ' (none found)'))),
+          h('option', { value: 'none', selected: p.overlay?.icon === 'none' }, 'No icon'),
+          Object.entries(ICONS).map(([k2, v]) => h('option', { value: k2, selected: p.overlay?.icon === k2 }, v.label)))),
+      iconFor(p) ? h('div', { class: 'field' }, h('label', { for: 'pe-iconlabel', text: 'Icon label' }),
+        h('input', { type: 'text', id: 'pe-iconlabel', value: p.overlay?.iconLabel || '', placeholder: ICONS[iconFor(p)].label + ' (leave blank for default)', disabled: ro, oninput: e => { p.overlay = { ...p.overlay, iconLabel: e.target.value }; schedulePreview(); } })) : null) : null,
     p.mediaKind !== 'video' ? h('div', { class: 'row' },
       h('div', { class: 'field' }, h('label', { for: 'pe-label', text: 'Graphic headline (optional)' }), h('input', { type: 'text', id: 'pe-label', value: p.overlay?.label || '', disabled: ro, placeholder: 'e.g. Happy Thanksgiving', oninput: e => { p.overlay = { ...p.overlay, label: e.target.value }; schedulePreview(); } })),
       h('div', { class: 'field', style: { flex: '0 0 150px' } }, h('label', { for: 'pe-corner', text: 'Logo corner' }),
