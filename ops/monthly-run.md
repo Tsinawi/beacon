@@ -86,7 +86,7 @@ Plan 3–4 posts per week, spread over different weekdays, following the content
 - `hashtags`: the community's `hashtagSet` plus 1–2 tags specific to the post
 - `linkKey`: amenity → `amenities`, floorplan → `floorplans`, video → `tour`, everything else → `home`
 - `platforms`: Facebook and Instagram always; Google for amenity, floor plan and special posts
-- `assetId` and `mediaKind: "image"`: the chosen library photo. Use a floor plan image for floor plan posts when one exists. Holiday and fun-day posts use the branded graphic (`assetId: null`).
+- `assetId` and `mediaKind: "image"`: the chosen library photo. Use a floor plan image for floor plan posts when one exists. Tag every floor plan flyer `floorplan:<Plan name>` in `media`: the command center shows those images whole, with no logo or Equal Housing overlay, because the flyer already has both. Holiday and fun-day posts use the branded graphic (`assetId: null`).
 - `overlay`: `{corner: community.defaultCorner || "tr", label}`. Give holiday, fun-day and special posts a 2–4 word headline; leave other labels empty.
 
 Write with `batch` (up to 50 writes per call).
