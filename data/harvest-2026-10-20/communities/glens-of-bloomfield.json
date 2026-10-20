@@ -1,0 +1,87 @@
+{
+ "name": "Glens of Bloomfield",
+ "short": "GLN",
+ "website": "https://www.liveatglens.com/",
+ "city": "Bloomfield Hills",
+ "state": "MI",
+ "color": "#2f5d46",
+ "active": true,
+ "defaultCorner": "tr",
+ "audience": "",
+ "voice": "",
+ "phone": "(947) 729-2251",
+ "address": "7480 Bingham Rd., Bloomfield Hills, MI 48301",
+ "hours": "Mon\u2013Fri 10\u20136, Sat 10\u20134, Sun closed",
+ "amenities": [
+  "Newly renovated 24-hour fitness center",
+  "Community clubhouse",
+  "Outdoor pool & sundeck",
+  "Covered parking available",
+  "Valet trash service",
+  "Pet-friendly (up to two pets)",
+  "24-hour emergency maintenance",
+  "In-home washer and dryer",
+  "Spacious living rooms",
+  "Patio & balcony options",
+  "Newly renovated homes (select apartments)",
+  "Single-level apartments and multilevel townhomes"
+ ],
+ "floorPlans": [
+  {
+   "name": "Malone",
+   "beds": 2,
+   "baths": 2,
+   "sqft": 1400,
+   "notes": ""
+  },
+  {
+   "name": "Extended Malone",
+   "beds": 2,
+   "baths": 2,
+   "sqft": 1440,
+   "notes": ""
+  },
+  {
+   "name": "Bradley",
+   "beds": 3,
+   "baths": 2,
+   "sqft": 2000,
+   "notes": ""
+  },
+  {
+   "name": "Roxton",
+   "beds": 3,
+   "baths": 2.5,
+   "sqft": 2000,
+   "notes": ""
+  },
+  {
+   "name": "Roxton Extended",
+   "beds": 4,
+   "baths": 2.5,
+   "sqft": 2400,
+   "notes": ""
+  }
+ ],
+ "specials": [],
+ "neighborhood": [
+  "Near Downtown Birmingham",
+  "Close to the West Bloomfield Trail and Clinton River Trail",
+  "Near the Cranbrook campus and Somerset Mall",
+  "Quick access to I-696, M-10 and I-96",
+  "Everyday errands along Telegraph and 14 Mile Rd"
+ ],
+ "harvest": {
+  "status": "ok",
+  "lastRun": "2026-10-20T16:00:00Z",
+  "note": "Read home, amenities, floor plans, gallery and neighborhood pages. Site uses a Cloudflare bot check, so it is read with a browser. No specials posted. Site footer credits Lightstone Group.",
+  "pages": [
+   "/",
+   "/amenities",
+   "/floorplans",
+   "/photogallery",
+   "/mapsanddirections"
+  ]
+ },
+ "updatedAt": "2026-10-20T16:00:00Z"
+}

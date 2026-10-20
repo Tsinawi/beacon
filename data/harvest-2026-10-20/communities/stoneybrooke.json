@@ -1,0 +1,63 @@
+{
+ "name": "Stoneybrooke",
+ "short": "STB",
+ "website": "https://stoneybrookecanton.com/",
+ "city": "Canton",
+ "state": "MI",
+ "color": "#1d4e7a",
+ "active": true,
+ "defaultCorner": "tr",
+ "audience": "",
+ "voice": "",
+ "phone": "(734) 888-9526",
+ "address": "8500 Brooke Park Drive, Canton, MI 48187",
+ "hours": "Mon\u2013Fri 10\u20136, Sat 10\u20134, Sun closed",
+ "amenities": [
+  "Newly renovated clubhouse",
+  "Swimming pool & sundeck",
+  "Playground",
+  "Bark park",
+  "Picnic area",
+  "Onsite laundry facilities",
+  "Pet-friendly",
+  "24/7 emergency maintenance",
+  "Onsite management team",
+  "Balcony or patio in every apartment",
+  "Central air conditioning",
+  "Additional storage space",
+  "Spacious, renovated floor plans"
+ ],
+ "floorPlans": [
+  {
+   "name": "Palomino",
+   "beds": 1,
+   "baths": 1,
+   "sqft": 700,
+   "notes": ""
+  },
+  {
+   "name": "McCloud",
+   "beds": 2,
+   "baths": 1,
+   "sqft": 900,
+   "notes": ""
+  }
+ ],
+ "specials": [],
+ "neighborhood": [
+  "Minutes from Downtown Plymouth's restaurants, shops and entertainment",
+  "Canton Township parks and recreation center",
+  "Easy drive to Ann Arbor and downtown Detroit"
+ ],
+ "harvest": {
+  "status": "ok",
+  "lastRun": "2026-10-20T16:00:00Z",
+  "note": "Read home, floor plan and apply pages plus the WordPress media library. No specials posted. Phone differs: site footer says 734.888.9526, floor plan sheets say 734-455-7200.",
+  "pages": [
+   "/",
+   "/floor-plan/",
+   "/rental-options/"
+  ]
+ },
+ "updatedAt": "2026-10-20T16:00:00Z"
+}
