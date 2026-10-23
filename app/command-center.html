@@ -104,7 +104,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   padding-block: 18px 40px;
   max-width: 1500px; margin: 0 auto;
 }
-@media (max-width: 900px) { .shell { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 900px) { .shell, .shell.collapsed { grid-template-columns: minmax(0, 1fr); } .rail-toggle { display: none; } }
 
 /* Rail */
 .rail { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -122,6 +122,16 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .rail-count { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
 .rail-count .attn { color: var(--warn); font-weight: 600; }
 .rail-select { display: none; }
+.rail-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 28px; }
+.rail-toggle { border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 15px; line-height: 1; flex: none; }
+.rail-toggle:hover { color: var(--fg); border-color: var(--muted); }
+.rail-short { display: none; font-family: var(--f-mono); font-size: 10.5px; font-weight: 600; color: var(--muted); }
+.shell.collapsed { grid-template-columns: 52px minmax(0, 1fr); max-width: 1800px; }
+.shell.collapsed .rail-head { justify-content: center; }
+.shell.collapsed .rail-head .eyebrow, .shell.collapsed .rail-item > :not(.rail-dot):not(.rail-short) { display: none; }
+.shell.collapsed .rail-item { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 4px; padding: 8px 2px; }
+.shell.collapsed .rail-short { display: block; }
+.shell.collapsed .rail-item[aria-current="true"] .rail-short { color: var(--fg); }
 @media (max-width: 900px) {
   .rail-list { display: none; }
   .rail-select { display: block; width: 100%; padding: 10px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); }
@@ -332,7 +342,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 
 <div class="shell">
   <aside class="rail" aria-label="Communities">
-    <div class="eyebrow">Communities</div>
+    <div class="rail-head"><span class="eyebrow">Communities</span><button class="rail-toggle" id="rail-toggle" type="button" aria-controls="rail-list" aria-expanded="true" aria-label="Collapse community list" title="Collapse community list">«</button></div>
     <select class="rail-select" id="rail-select" aria-label="Choose community"></select>
     <div class="rail-list" id="rail-list"></div>
   </aside>
@@ -778,16 +788,17 @@ function renderRail() {
     const ps = inMonth.filter(p => id === 'all' || p.communityId === id);
     return { n: ps.length, attn: ps.filter(p => p.status === 'draft' && readiness(p).blockers.length).length };
   };
-  const item = (id, name, meta, color) => {
+  const item = (id, name, meta, color, short) => {
     const c = counts(id);
-    list.append(h('button', { class: 'rail-item', 'aria-current': String(S.community === id), onclick: () => { S.community = id; if (S.view === 'communities' && id !== 'all') S.editCommunity = id; renderAll(); } },
+    list.append(h('button', { class: 'rail-item', 'aria-current': String(S.community === id), title: `${name}${c.n ? ` · ${c.n} posts this month` : ''}${c.attn ? `, ${c.attn} need attention` : ''}`, onclick: () => { S.community = id; if (S.view === 'communities' && id !== 'all') S.editCommunity = id; renderAll(); } },
       h('span', { class: 'rail-dot', style: { background: color || 'var(--navy)' } }),
+      h('span', { class: 'rail-short', text: short }),
       h('span', { style: { minWidth: 0 } }, h('div', { class: 'rail-name', text: name }), meta ? h('div', { class: 'rail-meta', text: meta }) : null),
       h('span', { class: 'rail-count', title: `${c.n} posts this month, ${c.attn} need attention` }, String(c.n), c.attn ? h('span', { class: 'attn', text: ' · ' + c.attn + '!' }) : null)));
     sel.append(h('option', { value: id, selected: S.community === id }, name + (c.n ? ` (${c.n})` : '')));
   };
-  item('all', 'All communities', `${commList().length} active`, null);
-  for (const [id, c] of commList()) item(id, c.name, [c.city, c.state].filter(Boolean).join(', '), c.color);
+  item('all', 'All communities', `${commList().length} active`, null, 'ALL');
+  for (const [id, c] of commList()) item(id, c.name, [c.city, c.state].filter(Boolean).join(', '), c.color, c.short || c.name.slice(0, 3).toUpperCase());
   sel.onchange = () => { S.community = sel.value; if (S.view === 'communities' && sel.value !== 'all') S.editCommunity = sel.value; renderAll(); };
 }
 function renderMain() {
@@ -1419,6 +1430,17 @@ function renderSettings(main) {
 
 // ---------- events ----------
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { S.view = t.dataset.view; if (S.view === 'communities' && S.community !== 'all') S.editCommunity = S.community; renderAll(); }));
+function setRail(collapsed) {
+  document.querySelector('.shell').classList.toggle('collapsed', collapsed);
+  const t = $('#rail-toggle');
+  t.textContent = collapsed ? '»' : '«';
+  t.setAttribute('aria-expanded', String(!collapsed));
+  t.setAttribute('aria-label', collapsed ? 'Expand community list' : 'Collapse community list');
+  t.title = t.getAttribute('aria-label');
+  try { localStorage.setItem('beacon.rail', collapsed ? 'collapsed' : 'open'); } catch (e) {}
+}
+$('#rail-toggle').addEventListener('click', () => setRail(!document.querySelector('.shell').classList.contains('collapsed')));
+try { if (localStorage.getItem('beacon.rail') === 'collapsed') setRail(true); } catch (e) {}
 init();
 })();
 </script>
