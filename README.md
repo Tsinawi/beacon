@@ -13,7 +13,7 @@ Social media planning, approval and (soon) auto-publishing for Beacon Management
 | AI captions and rewrites | Claude, called from the page | Built |
 | Branded image compositing (corner badge, headline, Equal Housing Opportunity line) | Canvas in the page; final JPG saved on approval | Built |
 | Website reader (source of truth for amenities, floor plans, specials, photos) | Scheduled Claude task that writes to the database | Next |
-| Hourly publisher (Facebook, Instagram, Google Business Profile) | Scheduled Claude task, API tokens kept as environment secrets | Blocked on Meta app review and Google API access |
+| Hourly publisher (Facebook, Instagram) | `tools/publish_meta.py`, run by `ops/publish-run.md` in the locked-down publisher environment; Meta system-user token held as a proxy-injected credential | Built, dry run; Google not yet |
 
 The community website is the source of truth. There is no PMS integration.
 
@@ -24,7 +24,12 @@ The community website is the source of truth. There is no PMS integration.
 - `media/{id}`: `communityId, assetId, kind, caption, shows[] (what is visible; drives photo checks), tag, source (website|upload|onedrive), addedAt, checkedAt`
 - `settings/brand`: `company, voice, cadence, timeSlots[], mix{type: weight}, eho, extraPhrases[], publishing{meta,google,harvester,publisher}`
 
-Access rules: anyone the page is shared with can read; only Editors and the owner can write.
+Access rules: anyone the page is shared with can read; only Editors and the owner can write. `control/publishing` (pause, dry run, approver, late window, cap, connection status) is writable by the owner only.
+
+- `control/publishing`: `paused, dryRun, approverId, lateHours, maxPerRun, meta{status,name,checkedAt}`
+- `publishLog/{id}`: `at, postId, communityId, title, platforms, result, note`
+- `communities/{slug}.meta`: `pageId, igUserId` (Meta connection)
+- Posts also carry `approvedBy, approvedSig (SHA-256 of the canonical approved content), approvedLink, postedIds, dryRunAt`.
 
 ## Publisher contract (for the scheduled task)
 

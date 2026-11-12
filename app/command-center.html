@@ -469,6 +469,7 @@ const S = {
   drawer: null,      // { id, draft, pv }
   editCommunity: null,
   narrow: matchMedia('(max-width: 760px)').matches,
+  control: null, log: [], userId: null, isOwner: false,
   busy: false,
 };
 const imgCache = new Map();
@@ -990,7 +991,12 @@ async function init() {
   const db = await (window.claude?.use ? claude.use('db') : null);
   S.db = db;
   if (!db) { S.loaded = { communities: true, posts: true, settings: true }; renderAll(); return; }
-  claude.use('user').then(async u => { S.user = u; if (u) { const w = await u.can('data.write'); if (w === false) { S.canWrite = false; renderAll(); } } });
+  claude.use('user').then(async u => {
+    S.user = u; if (!u) return;
+    S.userId = await u.id().catch(() => null); S.isOwner = await u.isOwner().catch(() => false);
+    const w = await u.can('data.write'); if (w === false) S.canWrite = false;
+    renderAll();
+  });
   claude.use('assets').then(a => { S.assets = a; if (S.drawer || S.view === 'communities') renderAll(); });
   claude.use('sample').then(s => { S.sample = s; renderAll(); });
   db.collection('communities').onSnapshot(snap => {
@@ -1002,6 +1008,9 @@ async function init() {
     if (S.drawer || S.view === 'communities') renderAll();
   }, e => console.warn(e));
   db.doc('settings/brand').onSnapshot(d => { S.settings = d.exists ? d.data() : {}; S.loaded.settings = true; renderAll(); }, e => console.warn(e));
+  // Publishing controls: only the artifact owner can change these (see the db rules).
+  db.doc('control/publishing').onSnapshot(d => { S.control = d.exists ? d.data() : {}; if (S.view === 'settings') renderMain(); }, e => console.warn(e));
+  db.collection('publishLog').orderBy('at', 'desc').limit(25).onSnapshot(snap => { S.log = snap.docs.map(d => d.data()); if (S.view === 'settings') renderMain(); }, e => console.warn(e));
   subscribePosts();
 }
 function subscribePosts() {
@@ -1209,7 +1218,22 @@ async function approve(id, p) {
   const slide2 = carousel ? await renderFinal(p, 'feed', 1).catch(e => { console.warn(e); return null; }) : null;
   const finalAssetIds = carousel && finalAssetId && slide2 ? [finalAssetId, slide2] : null;
   const finalGoogleAssetId = p.platforms?.google ? await renderFinal(p, 'google').catch(e => { console.warn(e); return null; }) : null;
-  await S.db.doc('posts/' + id).update({ status: 'approved', approvedAt: stamp(), finalAssetId: finalAssetId || null, finalAssetIds, finalLayout: social ? layoutFor(p) : null, finalGoogleAssetId: finalGoogleAssetId || null, updatedAt: stamp() });
+  const approvedLink = linkFor(p) || '';
+  const approvedSig = await approvalSig({ ...p, finalAssetId: finalAssetId || null, finalAssetIds }, approvedLink);
+  await S.db.doc('posts/' + id).update({ status: 'approved', approvedAt: stamp(), approvedBy: S.userId || null, approvedSig, approvedLink, finalAssetId: finalAssetId || null, finalAssetIds, finalLayout: social ? layoutFor(p) : null, finalGoogleAssetId: finalGoogleAssetId || null, updatedAt: stamp() });
+}
+// Fingerprint of exactly what was approved. tools/publish_meta.py recomputes it and refuses to post on any mismatch.
+function canon(v) {
+  if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
+  return JSON.stringify(v === undefined ? null : v);
+}
+async function approvalSig(p, link) {
+  const payload = { v: 1, communityId: p.communityId, date: p.date, time: p.time || '', caption: p.caption || '', hashtags: p.hashtags || '', link: link || '',
+    platforms: { facebook: !!p.platforms?.facebook, instagram: !!p.platforms?.instagram, google: !!p.platforms?.google },
+    images: p.finalAssetIds || (p.finalAssetId ? [p.finalAssetId] : []) };
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canon(payload)));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 function isReady(p) { const r = readiness(p); return !r.blockers.length && !r.warnings.some(w => BLOCKING.test(w)); }
 async function bulkApprove(from, to, label) {
@@ -1361,7 +1385,7 @@ function renderDrawer() {
     } else if (D.id) foot.append(h('button', { class: 'btn ghost danger', onclick: () => { D.confirmDelete = true; renderDrawer(); } }, 'Delete'));
     foot.append(h('span', { class: 'spacer' }));
     foot.append(h('button', { class: 'btn', onclick: () => saveDraft(false) }, D.id ? 'Save' : 'Save draft'));
-    if (p.status === 'approved') foot.append(h('button', { class: 'btn', onclick: async () => { await S.db.doc('posts/' + D.id).update({ status: 'draft', approvedAt: null, finalAssetId: null, finalAssetIds: null, finalLayout: null, finalGoogleAssetId: null, updatedAt: stamp() }); p.status = 'draft'; toast('Moved back to draft.'); renderDrawer(); } }, 'Unapprove'));
+    if (p.status === 'approved') foot.append(h('button', { class: 'btn', onclick: async () => { await S.db.doc('posts/' + D.id).update({ status: 'draft', approvedAt: null, approvedBy: null, approvedSig: null, approvedLink: null, finalAssetId: null, finalAssetIds: null, finalLayout: null, finalGoogleAssetId: null, updatedAt: stamp() }); p.status = 'draft'; toast('Moved back to draft.'); renderDrawer(); } }, 'Unapprove'));
     else if (['draft', 'held', 'failed'].includes(p.status)) foot.append(h('button', { class: 'btn beam', disabled: !!r.blockers.length, title: r.blockers[0] || '', onclick: () => saveDraft(true) }, 'Save & approve'));
   } else foot.append(h('span', { class: 'small muted', text: 'You can view this post but not change it.' }));
 
@@ -1417,9 +1441,9 @@ async function saveDraft(andApprove) {
   const p = D.draft;
   if (!p.communityId) { toast('Choose a community first.', true); return; }
   const orig = D.id ? S.posts[D.id] : null;
-  const strip = x => JSON.stringify({ ...x, status: 0, approvedAt: 0, finalAssetId: 0, finalAssetIds: 0, finalLayout: 0, finalGoogleAssetId: 0, updatedAt: 0 });
+  const strip = x => JSON.stringify({ ...x, status: 0, approvedAt: 0, approvedBy: 0, approvedSig: 0, approvedLink: 0, aiCheck: 0, finalAssetId: 0, finalAssetIds: 0, finalLayout: 0, finalGoogleAssetId: 0, updatedAt: 0 });
   const contentChanged = orig && strip(orig) !== strip(p);
-  if (orig && orig.status === 'approved' && contentChanged) { p.status = 'draft'; p.approvedAt = null; p.finalAssetId = null; p.finalAssetIds = null; p.finalLayout = null; p.finalGoogleAssetId = null; }
+  if (orig && orig.status === 'approved' && contentChanged) { p.status = 'draft'; p.approvedAt = null; p.approvedBy = null; p.approvedSig = null; p.approvedLink = null; p.finalAssetId = null; p.finalAssetIds = null; p.finalLayout = null; p.finalGoogleAssetId = null; }
   try {
     const id = await savePost(D.id, p);
     D.id = id;
@@ -1784,6 +1808,41 @@ function areaPanel(c) {
       h('span', { class: 'hint', text: 'Nearby places are filled in by the monthly run from OpenStreetMap.' }),
     places.length ? h('span', { class: 'hint', text: `Straight-line distances. Map data © OpenStreetMap contributors · updated ${new Date(c.area.fetchedAt).toLocaleDateString()}` }) : null);
 }
+// Publishing controls live in control/publishing, which only the artifact owner can write.
+function publishingPanel(line) {
+  const ctl = S.control || {};
+  const paused = ctl.paused !== false, dry = ctl.dryRun !== false;
+  const owner = S.isOwner;
+  const setCtl = async patch => {
+    try { await S.db.doc('control/publishing').set({ ...ctl, ...patch, updatedAt: stamp(), updatedBy: S.userId || null }); toast('Publishing settings saved.'); }
+    catch (e) { toast('Only the owner of this page can change publishing settings.', true); }
+  };
+  const meta = ctl.meta || {};
+  const pages = Object.values(S.communities).filter(c => c.meta?.pageId);
+  const state = paused ? ['bad', 'Paused: nothing will post'] : dry ? ['warn', 'Dry run: logs what it would post, posts nothing'] : ['ok', 'Live: approved posts go out on schedule'];
+  return h('section', { class: 'panel' }, h('h2', { text: 'Publishing' }),
+    h('div', { class: 'status-line', style: { fontSize: '15px' } }, h('span', { class: 'dot ' + state[0] }), h('b', { text: state[1] })),
+    h('div', { class: 'stack', style: { gap: '8px' } },
+      line(meta.status === 'connected' ? true : meta.status === 'error' ? false : 'warn', 'Facebook & Instagram', meta.status === 'connected' ? `Connected as ${meta.name || 'AutoPublisher'} · ${pages.length} page${pages.length === 1 ? '' : 's'} · checked ${meta.checkedAt ? new Date(meta.checkedAt).toLocaleDateString() : ''}` : meta.status === 'error' ? (meta.error || 'Connection check failed') : 'Not connected yet'),
+      line(false, 'Google Business Profile', 'Not connected (Meta only for now)')),
+    owner ? h('div', { class: 'stack', style: { gap: '10px' } },
+      h('div', { class: 'toolbar' },
+        h('button', { class: 'btn ' + (paused ? 'beam' : 'danger'), onclick: () => setCtl({ paused: !paused }) }, paused ? 'Resume publishing' : 'Pause all publishing'),
+        h('label', { class: 'checks' }, h('input', { type: 'checkbox', id: 'pc-dry', checked: dry, onchange: e => setCtl({ dryRun: e.target.checked }) }), 'Dry run (log only)')),
+      h('div', { class: 'row' },
+        h('div', { class: 'field' }, h('label', { for: 'pc-late', text: 'Post late for up to' }), h('select', { id: 'pc-late', onchange: e => setCtl({ lateHours: Number(e.target.value) }) },
+          [1, 2, 3, 6].map(n => h('option', { value: n, selected: (ctl.lateHours || 3) === n }, `${n} hour${n === 1 ? '' : 's'}, then skip`)))),
+        h('div', { class: 'field' }, h('label', { for: 'pc-max', text: 'Most posts per run' }), h('select', { id: 'pc-max', onchange: e => setCtl({ maxPerRun: Number(e.target.value) }) },
+          [5, 10, 20, 40].map(n => h('option', { value: n, selected: (ctl.maxPerRun || 10) === n }, String(n)))))),
+      ctl.approverId && ctl.approverId === S.userId ? h('span', { class: 'hint', text: 'Only posts approved by you are published.' })
+        : h('div', null, h('button', { class: 'btn', onclick: () => setCtl({ approverId: S.userId }) }, 'Make me the only approver'), h('span', { class: 'hint', text: ' The publisher posts only items approved under this account.' })))
+      : h('p', { class: 'small muted', text: 'Only the owner of this page can pause publishing or change these settings.' }),
+    h('h3', { text: 'Recent activity' }),
+    S.log.length ? h('div', { class: 'checklist' }, S.log.slice(0, 15).map(e => h('div', { class: 'check ' + (e.result === 'posted' ? 'ok' : e.result === 'dry-run' || e.result === 'skipped' ? 'warn' : 'bad') },
+      h('span', { text: e.result === 'posted' ? '✓' : e.result === 'dry-run' ? '○' : '!' }),
+      h('span', null, h('b', { text: `${e.result} · ` }), `${comm(e.communityId)?.name || ''} · ${e.title || ''} · ${(e.platforms || []).join(', ')} · ${new Date(e.at).toLocaleString()}${e.note ? ' · ' + e.note : ''}`))))
+      : h('p', { class: 'small muted', text: 'Nothing yet. Each publishing attempt, including dry runs, will show here.' }));
+}
 function addCommunity() {
   const name = h('input', { type: 'text', id: 'nc-name', placeholder: 'e.g. Whethersfield' });
   const site = h('input', { type: 'url', id: 'nc-site', placeholder: 'https://' });
@@ -1828,19 +1887,7 @@ function renderSettings(main) {
         h('textarea', { id: 's-extra', rows: 3, disabled: ro, oninput: e => { st.extraPhrases = lines(e.target.value); } }, (st.extraPhrases || []).join('\n')),
         h('span', { class: 'hint', text: 'Added to the built-in fair housing list. Flags are for review and are not legal advice.' })),
       !ro ? h('div', { class: 'toolbar' }, h('span', { class: 'spacer' }), h('button', { class: 'btn primary', onclick: save }, 'Save settings')) : null),
-    h('section', { class: 'panel' }, h('h2', { text: 'Publishing' }),
-      h('p', { class: 'small muted', text: 'An hourly Claude task posts approved items when their time arrives, re-checking specials against the website first.' }),
-      h('div', { class: 'stack', style: { gap: '8px' } },
-        line(pub.meta === 'connected' ? true : pub.meta === 'pending' ? 'warn' : false, 'Facebook & Instagram', pub.meta === 'connected' ? 'Connected through Meta Business Manager' : pub.meta === 'pending' ? 'App review in progress' : 'Not connected'),
-        line(pub.google === 'connected' ? true : pub.google === 'pending' ? 'warn' : false, 'Google Business Profile', pub.google === 'connected' ? 'Connected' : pub.google === 'pending' ? 'API access requested' : 'Not connected'),
-        line(pub.harvester === 'on' ? true : false, 'Website reader', pub.harvester === 'on' ? 'Runs weekly and on request' : 'Not scheduled yet'),
-        line(pub.publisher === 'on' ? true : false, 'Hourly publisher', pub.publisher === 'on' ? 'Running' : 'Not scheduled yet')),
-      h('h3', { text: 'To turn on auto-posting' }),
-      h('ol', { class: 'steps small' },
-        h('li', { text: 'Create a Meta developer app owned by your Business Manager and request Pages and Instagram publishing permissions.' }),
-        h('li', { text: 'Request Google Business Profile API access for your Google organization.' }),
-        h('li', { text: 'Add the tokens as secrets in the Claude environment that runs the publisher.' }),
-        h('li', { text: 'Ask Claude to schedule the hourly publisher and the weekly website reader.' })))));
+    publishingPanel(line)));
 }
 
 // ---------- events ----------
