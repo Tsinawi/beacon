@@ -41,6 +41,7 @@ Images with `hint: "flyer"`, and any image that shows text, are often specials. 
 
 Upload the keepers to the artifact (`Artifact` publish with `asset: true`, `file_paths`, up to 25 per call). Then add a `media` document for each with:
 - `communityId`, `assetId`, `kind: "image"`, `caption` (what the photo shows, plainly)
+- `shows`: the things clearly visible, using these words where they fit: pool, sundeck, pergola, fitness, clubhouse, lounge, coffee, barkpark, pets, playground, picnic, balcony, patio, kitchen, dining, living, bedroom, bathroom, closet, fireplace, laundry, parking, storage, renovated (only for clearly updated finishes), townhome, exterior, building, entrance, grounds, walkway, outdoor, floorplan. Look at the photo; never infer from the file name. If you aren't sure a building is the clubhouse, say `building`, not `clubhouse`.
 - `tag` (`pool`, `fitness`, `clubhouse`, `unit`, `exterior`, `floorplan:<Plan name>`, …)
 - `source: "website"`, `sourceUrl`, `sourceFile`, `hash`, `addedAt`
 
@@ -93,6 +94,14 @@ Plan 3–4 posts per week, spread over different weekdays, following the content
 - When fresh amenity or floor plan topics run out, fill those slots with fun days, seasonal moments or neighborhood posts drawn from the profile instead of repeating. The content mix is a target, not a quota.
 - Once something is more than 3 months old, it can come back with a new caption and, when there is one, a different photo.
 
+**Check every draft before saving.** These mirror the command center's checks, which block approval when they fail:
+- The photo shows the subject (above), and a floor plan flyer matches the plan named.
+- Every amenity the caption mentions appears in the profile's `amenities` from the website. A photo showing something (like a coffee bar) isn't enough: if the website doesn't list it, don't claim it.
+- Floor plan bedrooms, bathrooms and square footage match the profile exactly.
+- No offers or "free" language unless a current special covers the post date.
+- Pool posts outside May–September only if the caption looks ahead to summer; prefer another amenity.
+- Don't use the same photo twice in a month, or repeat an amenity or plan within 90 days.
+
 **Writing rules.** These are the same as the command center's generator:
 - Fair housing: never describe who the ideal resident is. Don't mention families, children, age groups, students, singles, couples, religion, national origin, disability, or "safe neighborhood". Describe the property, amenities and events. Say "primary bedroom". Never mention schools, school districts or places of worship, even when area notes do.
 - Use only facts from the profile. If a fact is missing, set `needsData` to what is missing and use a [bracketed placeholder].
@@ -105,7 +114,7 @@ Plan 3–4 posts per week, spread over different weekdays, following the content
 - `hashtags`: the community's `hashtagSet` plus 1–2 tags specific to the post
 - `linkKey`: amenity → `amenities`, floorplan → `floorplans`, video → `tour`, local → `neighborhood`, everything else → `home`
 - `platforms`: Facebook and Instagram always; Google for amenity, floor plan and special posts
-- `assetId` and `mediaKind: "image"`: the chosen library photo. Use a floor plan image for floor plan posts when one exists. Tag every floor plan flyer `floorplan:<Plan name>` in `media`: the command center shows those images whole, with no logo or Equal Housing overlay, because the flyer already has both. Holiday and fun-day posts use the branded graphic (`assetId: null`).
+- `assetId` and `mediaKind: "image"`: the chosen library photo. **The photo must show the post's subject**: its `shows` list has to include it (a covered parking post needs a photo with `parking`, a pet post one with `pets` or `barkpark`). Look at the photo before choosing it. If no library photo shows the subject, use the branded graphic (`assetId: null`) with the amenity as `overlay.label`. Never stand in a general exterior or lawn shot. Use a floor plan image for floor plan posts when one exists. Tag every floor plan flyer `floorplan:<Plan name>` in `media`: the command center shows those images whole, with no logo or Equal Housing overlay, because the flyer already has both. Holiday and fun-day posts use the branded graphic (`assetId: null`).
 - `overlay`: `{corner: community.defaultCorner || "tr", label}`. Give holiday, fun-day and special posts a 2–4 word headline; leave other labels empty. Amenity posts with a photo get an amenity icon automatically, picked from the post title and photo, so use plain amenity words in titles ("Pool and sundeck spotlight", "Bark park spotlight"). To force one, set `overlay.icon` to a key from `ICONS` in the command center, or `"none"`. Photo posts rotate through five 4:5 layouts automatically (blurred fill, color-matched bands, brand panel, two-photo stack, swipe carousel), so leave `overlay.layout` unset. Give each amenity two or more library photos when you can, so its two-photo stack posts have a second image.
 
 Write with `batch` (up to 50 writes per call).

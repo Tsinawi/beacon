@@ -537,6 +537,102 @@ function complianceHits(text) {
   }
   return hits;
 }
+// ---------- content checks ----------
+// Photo subjects: which words in a photo's `shows` list satisfy a post about each subject.
+const PHOTO_ACCEPTS = { pets: ['pets', 'barkpark'], outdoor: ['outdoor', 'grounds', 'balcony', 'pool', 'barkpark', 'playground'], community: ['community', 'exterior', 'entrance', 'townhome', 'grounds'] };
+// Amenity claims in captions, checked against the community's website facts.
+const CLAIM_WORDS = [['coffee bar', 'coffee'], ['sundeck', 'pool'], ['pool', 'pool'], ['fitness', 'fitness'], ['gym', 'fitness'], ['bark park', 'barkpark'], ['dog park', 'barkpark'], ['pet-friendly', 'pets'], ['pets', 'pets'], ['clubhouse', 'clubhouse'], ['playground', 'playground'], ['picnic', 'picnic'], ['balcon', 'balcony'], ['patio', 'balcony'], ['washer', 'laundry'], ['laundry', 'laundry'], ['covered parking', 'parking'], ['garage', 'parking'], ['carport', 'parking'], ['walk-in closet', 'closet'], ['fireplace', 'fireplace'], ['valet trash', 'trash'], ['storage', 'storage'], ['central air', 'ac'], ['air condition', 'ac'], ['renovated', 'renovated'], ['townhome', 'townhome']];
+const FACT_WORDS = { pool: ['pool'], fitness: ['fitness', 'gym'], clubhouse: ['clubhouse'], barkpark: ['bark', 'dog park'], pets: ['pet'], playground: ['playground'], picnic: ['picnic'], balcony: ['balcon', 'patio'], laundry: ['laundry', 'washer'], parking: ['parking', 'garage', 'carport'], closet: ['closet'], coffee: ['coffee'], trash: ['trash'], storage: ['storage'], ac: ['air'], fireplace: ['fireplace'], renovated: ['renovat'], townhome: ['townhome', 'multilevel'] };
+const NUM_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5 };
+const BLOCKING = /^(Fair housing|Photo check|Fact check)/;
+function photoShows(id) { const m = Object.values(S.media).find(x => x.assetId === id); return m ? (m.shows || null) : undefined; }
+function subjectFor(p) {
+  if (p.type !== 'amenity' || p.overlay?.icon === 'none') return null;
+  if (p.overlay?.icon && ICONS[p.overlay.icon]) return p.overlay.icon;
+  const t = String(p.title || '').toLowerCase();
+  const hit = ICON_WORDS.find(([w]) => t.includes(w));
+  return hit ? hit[1] : null;
+}
+function planFor(p, c) {
+  const names = (c.floorPlans || []).map(f => f.name).filter(Boolean).sort((a, b) => b.length - a.length);
+  for (const text of [p.title, p.caption]) { const t = String(text || '').toLowerCase(); const n = names.find(x => t.includes(x.toLowerCase())); if (n) return (c.floorPlans || []).find(f => f.name === n); }
+  return null;
+}
+function profileText(c) {
+  return [...(c.amenities || []), ...(c.neighborhood || []), ...(c.floorPlans || []).map(f => `${f.name} ${f.notes || ''}`), ...(c.specials || []).map(s2 => s2.text)].join(' ').toLowerCase();
+}
+function activeSpecials(c, date) { return (c.specials || []).filter(s2 => !s2.endsOn || s2.endsOn >= date); }
+function contentChecks(p) {
+  const out = { blocking: [], review: [] };
+  const c = comm(p.communityId) || {};
+  const caption = String(p.caption || '');
+  const low = caption.toLowerCase();
+  // Photo shows the subject
+  const subject = subjectFor(p);
+  if (subject && p.assetId && p.mediaKind !== 'video' && !isFlyer(p)) {
+    const label = ICONS[subject]?.label || subject;
+    const accepts = PHOTO_ACCEPTS[subject] || [subject];
+    const photos = [p.assetId];
+    if (layoutFor(p) === 'stack' && secondPhoto(p)) photos.push(secondPhoto(p));
+    photos.forEach((id, i) => {
+      const shows = photoShows(id);
+      if (shows === null) out.review.push(`Photo not described yet. Use Check with Claude to confirm it shows ${label.toLowerCase()}.`);
+      else if (shows && !accepts.some(a => shows.includes(a))) out.blocking.push(`Photo check: this post is about ${label.toLowerCase()}, but the ${i ? 'second ' : ''}photo shows ${shows.join(', ')}. Pick a photo of ${label.toLowerCase()} or use the branded graphic.`);
+    });
+  }
+  // Floor plan flyer matches the plan named
+  const plan = planFor(p, c);
+  const m = mediaFor(p);
+  if (plan && m && String(m.tag || '').startsWith('floorplan:')) {
+    const shown = m.tag.slice('floorplan:'.length).trim();
+    if (shown && shown.toLowerCase() !== plan.name.toLowerCase()) out.blocking.push(`Photo check: the image is the ${shown} floor plan, but the post is about the ${plan.name}.`);
+  }
+  // Floor plan numbers
+  if (plan) {
+    const num = v => v == null ? null : (NUM_WORDS[String(v).toLowerCase()] ?? Number(String(v).replace(/,/g, '')));
+    const bed = /(\d|one|two|three|four|five)[ -]?(?:bed|bedroom)/i.exec(caption), bath = /(\d(?:\.5)?|one|two|three)[ -]?(?:bath|bathroom)/i.exec(caption), sq = /([\d,]{3,6})\s*(?:square feet|sq\.? ?ft)/i.exec(caption);
+    if (bed && plan.beds && num(bed[1]) !== Number(plan.beds)) out.blocking.push(`Fact check: the caption says ${bed[1]} bedroom(s), but the ${plan.name} has ${plan.beds}.`);
+    if (bath && plan.baths && num(bath[1]) !== Number(plan.baths)) out.blocking.push(`Fact check: the caption says ${bath[1]} bathroom(s), but the ${plan.name} has ${plan.baths}.`);
+    if (sq && plan.sqft && Math.abs(num(sq[1]) - Number(plan.sqft)) > 50) out.blocking.push(`Fact check: the caption says ${sq[1]} sq ft, but the ${plan.name} is about ${plan.sqft}.`);
+  }
+  // Amenities the website doesn't list
+  if (['amenity', 'floorplan', 'video', 'special', 'other'].includes(p.type) && c.amenities?.length) {
+    const facts = profileText(c), seen = new Set();
+    for (const [w, key] of CLAIM_WORDS) {
+      if (seen.has(key) || !low.includes(w)) continue;
+      seen.add(key);
+      if (!(FACT_WORDS[key] || [key]).some(f => facts.includes(f))) out.blocking.push(`Fact check: the caption mentions “${w}”, which isn't listed on ${c.name || 'the community'}'s website.`);
+    }
+  }
+  // Offers without a current special
+  if (/(free (rent|month|week)|months? free|weeks? free|move-in special|special offer|% off|\$\d+ off|concession|waived)/i.test(caption) && !activeSpecials(c, p.date).length)
+    out.blocking.push('Fact check: the caption mentions an offer, but no current special is on file for this date.');
+  // Season
+  const month = Number(String(p.date).slice(5, 7));
+  if ((subject === 'pool' || (p.type === 'amenity' && /\bpool\b/.test(low))) && (month < 5 || month > 9))
+    out.review.push(`Season check: a pool post in ${MONTHS[month - 1]}, when outdoor pools are closed. Fine if it looks ahead to summer.`);
+  // Repeats
+  const others = Object.entries(S.posts).filter(([, x]) => x !== p && x.communityId === p.communityId && !(x.date === p.date && x.title === p.title));
+  if (p.assetId) {
+    const dup = others.find(([, x]) => x.assetId === p.assetId && String(x.date).slice(0, 7) === String(p.date).slice(0, 7));
+    if (dup) out.review.push(`Repeat photo: the same photo is used on ${fmtShort(dup[1].date)}.`);
+  }
+  const days = (a, b) => Math.abs(parseDs(a) - parseDs(b)) / 864e5;
+  const topicOf = x => { const pl = planFor(x, c); if (pl) return 'plan:' + pl.name; const sj = subjectFor(x); return sj ? 'amenity:' + sj : null; };
+  const topic = topicOf(p);
+  if (topic) {
+    const rep = others.find(([, x]) => days(x.date, p.date) <= 90 && topicOf(x) === topic);
+    if (rep) out.review.push(`Repeat topic: ${plan ? 'the ' + plan.name : (ICONS[subject]?.label || '').toLowerCase()} is also featured on ${fmtShort(rep[1].date)}.`);
+  }
+  // Claude's own look, when it matches the current photo and caption
+  const ai = p.aiCheck;
+  if (ai && ai.assetId === (p.assetId || null) && ai.captionSig === captionSig(p)) {
+    if (ai.photoMatches === false) out.blocking.push(`Photo check (Claude): ${ai.photoShows ? 'the photo shows ' + ai.photoShows + '. ' : ''}It doesn't match the post.`);
+    for (const t of ai.issues || []) out.review.push('Claude: ' + t);
+  }
+  return out;
+}
+function captionSig(p) { const t = `${p.title || ''}|${p.caption || ''}|${p.date || ''}`; let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return String(h); }
 function readiness(p) {
   const blockers = [], warnings = [], ok = [];
   if (p.needsData) blockers.push('Needs website info: ' + p.needsData);
@@ -554,8 +650,12 @@ function readiness(p) {
   for (const x of hits) warnings.push(`Fair housing review: “${x.phrase}”. ${x.why}`);
   if (!p.assetId && p.type !== 'video' && !['holiday','funday'].includes(p.type)) warnings.push('No photo chosen. A branded graphic will be used instead.');
   if (p.type === 'local') warnings.push('Local spotlight: confirm the place is still open and the details are right before approving.');
+  const cc = contentChecks(p);
+  warnings.unshift(...cc.blocking); warnings.push(...cc.review);
   const lk = linkKeyFor(p);
   if (lk && (p.platforms?.facebook || p.platforms?.google) && !linkFor(p)) warnings.push(`No tracking link saved for “${LINKS[lk] || lk}”. Add it on the Communities tab, or the post goes out without a link.`);
+  const ai = p.aiCheck;
+  if (ai && ai.assetId === (p.assetId || null) && ai.captionSig === captionSig(p) && ai.photoMatches !== false && !(ai.issues || []).length) ok.push('Claude checked the photo and caption: no issues.');
   if (!blockers.length && !warnings.length) ok.push('Ready to approve.');
   return { blockers, warnings, ok };
 }
@@ -829,7 +929,7 @@ function iconFor(p) {
   if (chosen === 'none') return null;
   if (chosen && ICONS[chosen]) return chosen;
   if (p.type === 'local') return 'local';
-  if (p.type !== 'amenity' || !p.assetId || p.mediaKind === 'video' || isFlyer(p)) return null;
+  if (p.type !== 'amenity' || p.mediaKind === 'video' || isFlyer(p)) return null;
   const m = mediaFor(p) || {};
   for (const text of [p.title, (m.tag || '') + ' ' + (m.caption || '')]) {
     const t = String(text || '').toLowerCase();
@@ -908,7 +1008,8 @@ function subscribePosts() {
   if (unsubPosts) unsubPosts();
   S.loaded.posts = false; S.posts = {};
   const { first, last } = monthBounds(S.ym);
-  const from = ds(mondayOf(first)), to = ds(addDays(mondayOf(last), 6));
+  // 90 days of history so repeat checks can see recent months; the calendar itself shows only the viewed month.
+  const from = ds(addDays(mondayOf(first), -90)), to = ds(addDays(mondayOf(last), 6));
   unsubPosts = S.db.collection('posts').where('date', '>=', from).where('date', '<=', to).onSnapshot(snap => {
     S.posts = {}; snap.docs.forEach(d => S.posts[d.id] = d.data());
     S.loaded.posts = true;
@@ -1067,14 +1168,15 @@ function chip(id, p) {
   const c = comm(p.communityId) || {};
   const r = p.status === 'draft' ? readiness(p) : null;
   const needs = r && r.blockers.length;
+  const flagged = r && !needs && r.warnings.some(w => BLOCKING.test(w));
   let thumb;
   if (p.finalAssetId) thumb = h('span', { class: 'thumb', style: { backgroundImage: `url(${blob(p.finalAssetId)})` } });
   else if (p.assetId && p.mediaKind !== 'video') thumb = h('span', { class: 'thumb', style: { backgroundImage: `url(${blob(p.assetId)})` } });
   else if (p.type === 'video' || p.needsData) thumb = h('span', { class: 'thumb missing' });
   else thumb = h('span', { class: 'thumb gfx' });
   const stt = p.status || 'draft';
-  const status = needs ? h('span', { class: 'st needs', text: 'Needs info' }) : stt === 'draft' ? h('span', { class: 'st', text: 'Draft' }) : h('span', { class: 'st ' + stt, text: stt[0].toUpperCase() + stt.slice(1) });
-  return h('button', { class: `chip ${p.status}${needs ? ' needs' : ''}`, '--tc': typeColor(p.type), onclick: () => openEditor(id),
+  const status = needs ? h('span', { class: 'st needs', text: 'Needs info' }) : flagged ? h('span', { class: 'st needs', text: 'Check' }) : stt === 'draft' ? h('span', { class: 'st', text: 'Draft' }) : h('span', { class: 'st ' + stt, text: stt[0].toUpperCase() + stt.slice(1) });
+  return h('button', { class: `chip ${p.status}${needs || flagged ? ' needs' : ''}`, '--tc': typeColor(p.type), onclick: () => openEditor(id),
       title: `${c.name || ''} · ${(TYPES[p.type] || TYPES.other).label} · ${p.title || ''}` },
     thumb,
     h('span', { class: 'ct' },
@@ -1108,7 +1210,7 @@ async function approve(id, p) {
   const finalGoogleAssetId = p.platforms?.google ? await renderFinal(p, 'google').catch(e => { console.warn(e); return null; }) : null;
   await S.db.doc('posts/' + id).update({ status: 'approved', approvedAt: stamp(), finalAssetId: finalAssetId || null, finalAssetIds, finalLayout: social ? layoutFor(p) : null, finalGoogleAssetId: finalGoogleAssetId || null, updatedAt: stamp() });
 }
-function isReady(p) { const r = readiness(p); return !r.blockers.length && !r.warnings.some(w => w.startsWith('Fair housing')); }
+function isReady(p) { const r = readiness(p); return !r.blockers.length && !r.warnings.some(w => BLOCKING.test(w)); }
 async function bulkApprove(from, to, label) {
   if (S.busy) return;
   const items = visiblePosts().filter(([, p]) => p.date >= from && p.date <= to && p.status === 'draft');
@@ -1116,7 +1218,7 @@ async function bulkApprove(from, to, label) {
   const skipped = items.length - ready.length;
   const body = h('div', { class: 'stack' },
     h('p', { text: `${ready.length} of ${items.length} drafts for ${label} are ready and will be approved. Final images are rendered in 4:5 for Facebook and Instagram and 4:3 for Google, with the community logo, and saved.` }),
-    skipped ? h('div', { class: 'notice', text: `${skipped} will stay as drafts because they need website info, media, or a fair housing review. Open them from the calendar to fix.` }) : null);
+    skipped ? h('div', { class: 'notice', text: `${skipped} will stay as drafts because they need website info, a photo or fact fix, or a fair housing review. Open them from the calendar to fix.` }) : null);
   modal({ title: `Approve ${label}`, body, actions: [
     { label: 'Cancel' },
     { label: `Approve ${ready.length}`, primary: true, onClick: async () => {
@@ -1194,7 +1296,7 @@ function renderDrawer() {
 
   const checks = h('div', { class: 'checklist' }, statusLine,
     r.blockers.map(t => h('div', { class: 'check bad' }, h('span', { text: '✕' }), h('span', { text: t }))),
-    r.warnings.map(t => h('div', { class: 'check warn' }, h('span', { text: '!' }), h('span', { text: t }))),
+    r.warnings.map(t => h('div', { class: 'check ' + (BLOCKING.test(t) ? 'bad' : 'warn') }, h('span', { text: BLOCKING.test(t) ? '✕' : '!' }), h('span', { text: t }))),
     r.ok.map(t => h('div', { class: 'check ok' }, h('span', { text: '✓' }), h('span', { text: t }))));
 
   const rewriteIn = h('input', { type: 'text', id: 'pe-rewrite', placeholder: 'e.g. shorter, more playful, mention the pool', disabled: ro });
@@ -1241,7 +1343,10 @@ function renderDrawer() {
           h('option', { value: 'tl', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tl' }, 'Top left'),
           h('option', { value: 'tr', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tr' }, 'Top right')))) : null);
 
-  const right = h('div', { class: 'stack' }, preview, h('div', { class: 'eyebrow', text: 'Checks' }), checks);
+  const right = h('div', { class: 'stack' }, preview,
+    h('div', { class: 'toolbar' }, h('div', { class: 'eyebrow', text: 'Checks' }), h('span', { class: 'spacer' }),
+      S.sample && !ro ? h('button', { class: 'btn', disabled: D.checking, onclick: () => claudeCheck(D) }, D.checking ? 'Checking…' : 'Check with Claude') : null),
+    checks);
 
   const foot = h('div', { class: 'drawer-foot' });
   if (!ro) {
@@ -1328,6 +1433,50 @@ async function saveDraft(andApprove) {
   } catch (e) { console.warn(e); toast('Could not save. ' + (e.code === 'invalid_argument' ? 'You may not have edit access.' : 'Try again.'), true); }
 }
 
+// Claude looks at the photo itself and reads the caption against the community's facts.
+async function claudeCheck(D) {
+  const p = D.draft, c = comm(p.communityId) || {};
+  D.checking = true; renderDrawer();
+  try {
+    let images;
+    if (p.assetId && p.mediaKind !== 'video') {
+      const lim = await S.sample.limits().catch(() => null);
+      if (lim?.images) images = [await (await fetch(blob(p.assetId))).blob()];
+    }
+    const out = await S.sample.json(`You review one social media post for an apartment community before the marketer approves it.
+${brandBlock()}
+
+${communityBlock(c)}
+
+POST TYPE: ${(TYPES[p.type] || TYPES.other).label}
+DATE: ${p.date}
+TITLE: ${p.title || ''}
+CAPTION:
+${p.caption || '(empty)'}
+${images ? 'The attached image is the photo the post uses.' : p.assetId ? 'The photo could not be attached; judge the caption only.' : 'The post uses a branded graphic, not a photo.'}
+
+Check, briefly and concretely:
+1. Does the photo clearly show what the post is about? (Say what it actually shows.)
+2. Does the caption claim anything the facts above don't support (amenities, numbers, offers, places)?
+3. Is anything off for the date (season, holiday, a special that has ended)?
+4. Any fair housing problem (describing who should live there, schools, religion, family status, age)?
+Only list real problems. Reply with only JSON: {"photoShows":"short description, or empty if no photo","photoMatches":true or false or null,"issues":["one short sentence per problem"]}`, { modelTier: 'default', cache: false, ...(images ? { images } : {}) });
+    p.aiCheck = { at: stamp(), assetId: p.assetId || null, captionSig: captionSig(p), photoShows: String(out?.photoShows || ''), photoMatches: typeof out?.photoMatches === 'boolean' ? out.photoMatches : null, issues: Array.isArray(out?.issues) ? out.issues.map(String).slice(0, 6) : [] };
+    if (D.id) await S.db.doc('posts/' + D.id).update({ aiCheck: p.aiCheck });
+    toast(p.aiCheck.photoMatches === false || p.aiCheck.issues.length ? 'Claude found something to look at.' : 'Claude found no issues.');
+  } catch (e) { console.warn(e); toast(e.code === 'not_granted' ? 'Claude access was not allowed for this page.' : 'The check didn’t finish. Try again.', true); }
+  if (S.drawer === D) { D.checking = false; renderDrawer(); }
+}
+// New uploads get a caption and a list of what they show, so photo checks work for them too.
+async function describeUpload(mediaId, assetId) {
+  try {
+    const lim = await S.sample.limits(); if (!lim?.images) return;
+    const img = await (await fetch(blob(assetId))).blob();
+    const vocab = [...new Set(Object.keys(ICONS).concat(['exterior', 'grounds', 'walkway', 'entrance', 'dining', 'sundeck', 'pergola', 'lounge', 'floorplan', 'people', 'graphic']))].join(', ');
+    const out = await S.sample.json(`Describe this apartment-community photo for a photo library. Reply with only JSON: {"caption":"plain 3-8 word description","shows":["words from this list that are clearly visible: ${vocab}"]}`, { images: [img], modelTier: 'quick' });
+    if (out && typeof out.caption === 'string') await S.db.doc('media/' + mediaId).update({ caption: out.caption.slice(0, 80), shows: Array.isArray(out.shows) ? out.shows.map(String).slice(0, 8) : [], checkedAt: stamp() });
+  } catch (e) { console.warn('describe failed', e); }
+}
 async function uploadMedia(file, communityId) {
   if (!S.assets) { toast('Uploading needs edit access to this page.', true); return null; }
   const kind = file.type.startsWith('video') ? 'video' : 'image';
@@ -1335,7 +1484,8 @@ async function uploadMedia(file, communityId) {
     toast(`Uploading ${file.name}…`);
     const up = await S.assets.upload(file);
     const ref = await S.db.collection('media').add({ communityId, assetId: up.id, kind, caption: file.name.replace(/\.[^.]+$/, ''), source: 'upload', addedAt: stamp() });
-    S.media[ref.id] = { communityId, assetId: up.id, kind, caption: file.name, source: 'upload' };
+    S.media[ref.id] = { communityId, assetId: up.id, kind, caption: file.name, source: 'upload', shows: null };
+    if (kind === 'image' && S.sample) describeUpload(ref.id, up.id);
     return ref.id;
   } catch (e) {
     console.warn(e);
@@ -1444,10 +1594,21 @@ Set google true for amenity, floorplan and special posts only.`;
       title: String(it.title || '').slice(0, 80), caption: String(it.caption || ''), gbpCaption: '', hashtags: mergeTags(c.hashtagSet, String(it.postTags || it.hashtags || '').split(/\s+/).slice(0, 2).join(' ')),
       platforms: { facebook: it.platforms?.facebook !== false, instagram: it.platforms?.instagram !== false, google: !!it.platforms?.google },
       assetId: null, mediaKind: null, overlay: { corner: c.defaultCorner || 'tr', label: String(it.overlayLabel || '') },
+      ...pickPhoto(cid, type, String(it.title || '')),
       status: 'draft', needsData: String(it.needsData || ''), createdBy: 'claude', updatedAt: stamp() });
     n++;
   }
   return n;
+}
+// Generated amenity posts get a library photo that actually shows the amenity, or none (branded graphic).
+function pickPhoto(cid, type, title) {
+  if (type !== 'amenity') return {};
+  const subject = subjectFor({ type, title, overlay: {} }); if (!subject) return {};
+  const accepts = PHOTO_ACCEPTS[subject] || [subject];
+  const used = new Set(Object.values(S.posts).filter(x => x.communityId === cid).map(x => x.assetId));
+  const fits = Object.values(S.media).filter(m => m.communityId === cid && m.kind !== 'video' && (m.shows || []).some(w => accepts.includes(w)));
+  const pick = fits.find(m => !used.has(m.assetId)) || fits[0];
+  return pick ? { assetId: pick.assetId, mediaKind: 'image' } : {};
 }
 async function rewrite(instr) {
   const D = S.drawer; if (!D || !S.sample) return;

@@ -1,0 +1,19 @@
+{
+ "type": "local",
+ "title": "Local spotlight: Madeleine's French Patisserie",
+ "caption": "Local spotlight \ud83e\udd50 Madeleine's French Patisserie is a bakery about 1.2 miles from Glens of Bloomfield. Picking up something sweet for New Year's Eve? Share your favorite local treat in the comments.",
+ "hashtags": "#LiveAtGlens #GlensOfBloomfield #BloomfieldHills #MichiganLiving #LocalSpotlight #ShopLocal",
+ "assetId": null,
+ "mediaKind": null,
+ "linkKey": "neighborhood",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "overlay": {
+  "corner": "tr",
+  "label": "Madeleine's Patisserie"
+ },
+ "updatedAt": "2026-11-12T21:00:00Z"
+}

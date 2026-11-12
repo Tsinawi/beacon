@@ -1,0 +1,19 @@
+{
+ "type": "local",
+ "title": "Local spotlight: Penn Theatre",
+ "caption": "Local spotlight \ud83c\udfac The Penn Theatre is a movie theater about 2 miles from Stoneybrooke. Planning a movie night over the holiday break? Tell us your favorite spot to catch a film around Canton and Plymouth.",
+ "hashtags": "#Stoneybrooke #CantonMI #MichiganLiving #ApartmentLiving #LocalSpotlight #PlymouthMI",
+ "assetId": null,
+ "mediaKind": null,
+ "linkKey": "neighborhood",
+ "platforms": {
+  "facebook": true,
+  "instagram": true,
+  "google": false
+ },
+ "overlay": {
+  "corner": "tr",
+  "label": "Penn Theatre"
+ },
+ "updatedAt": "2026-11-12T21:00:00Z"
+}
