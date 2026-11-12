@@ -271,7 +271,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .cta .src { overflow-wrap: anywhere; }
 .pv-tabs { display: flex; gap: 4px; padding: 8px 12px 0; }
 .pv-tab { border: 0; background: transparent; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12.5px; color: var(--muted); }
-.pv-tab[aria-selected="true"] { background: var(--surface-2); color: var(--fg); }
+.pv-tab[aria-selected="true"], .pv-tab[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); }
+.pv-slides { margin-left: auto; display: flex; gap: 2px; }
 
 .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
 .media-tile { position: relative; aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; border: 2px solid transparent; cursor: pointer; padding: 0; background: var(--surface-2); background-size: cover; background-position: center; }
@@ -423,6 +424,9 @@ const ICONS = {
   "local":{"label": "Local spotlight", "svg": "<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\" /> <circle cx=\"12\" cy=\"10\" r=\"3\" />"},
   "townhome":{"label":"Townhomes","svg":"<path d=\"M10 12h4\" /> <path d=\"M10 8h4\" /> <path d=\"M14 21v-3a2 2 0 0 0-4 0v3\" /> <path d=\"M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2\" /> <path d=\"M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16\" />"}};
 const ICON_WORDS = [['coffee','coffee'],['pool','pool'],['sundeck','pool'],['fitness','fitness'],['gym','fitness'],['bark','barkpark'],['dog park','barkpark'],['pet','pets'],['clubhouse','clubhouse'],['playground','playground'],['picnic','picnic'],['balcon','balcony'],['patio','balcony'],['washer','laundry'],['laundry','laundry'],['parking','parking'],['garage','parking'],['kitchen','kitchen'],['bedroom','bedroom'],['bath','bathroom'],['closet','closet'],['fireplace','fireplace'],['living','living'],['maintenance','maintenance'],['trash','trash'],['storage','storage'],['central air','ac'],['air condition','ac'],['renovat','renovated'],['townhome','townhome'],['multilevel','townhome'],['grounds','outdoor'],['outdoor','outdoor']];
+// 4:5 layouts for landscape photo posts. Auto rotates through LAYOUT_CYCLE per community, in date order within the month.
+const LAYOUTS = { blur: 'Blurred fill', match: 'Color-matched bands', panel: 'Brand panel', stack: 'Two-photo stack', carousel: 'Swipe carousel (2 slides)', full: 'Full photo' };
+const LAYOUT_CYCLE = ['blur', 'match', 'panel', 'stack', 'carousel'];
 const DEFAULT_SLOTS = ['10:00', '11:00', '12:00', '13:00', '14:00'];
 const LINKS = { home: 'Home page', floorplans: 'Floor plans', amenities: 'Amenities', tour: 'Schedule a tour', gallery: 'Photo gallery', neighborhood: 'Neighborhood' };
 const LINK_FOR_TYPE = { amenity: 'amenities', floorplan: 'floorplans', video: 'tour', special: 'home', local: 'neighborhood', holiday: 'home', funday: 'home', other: 'home' };
@@ -587,7 +591,7 @@ function tintLogo(img, fill) {
   x.globalCompositeOperation = 'source-in'; x.fillStyle = fill; x.fillRect(0, 0, cv.width, cv.height);
   return cv;
 }
-async function drawComposite(canvas, p, fmt = 'feed') {
+async function drawComposite(canvas, p, fmt = 'feed', slide = 0) {
   const F = FORMATS[fmt] || FORMATS.feed, W = F.w, H = F.h, k = Math.min(W, H) / 1080;
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
@@ -605,7 +609,50 @@ async function drawComposite(canvas, p, fmt = 'feed') {
     ctx.drawImage(photo, (W - w) / 2, (H - hh) / 2, w, hh);
     return;
   }
-  if (photo) {
+  const layout = fmt === 'feed' && photo ? layoutFor(p) : 'full';
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  if (photo && layout === 'blur') {
+    // whole photo across the middle; the bands are a heavily blurred copy, darkened 25%
+    const small = document.createElement('canvas'); small.width = 36; small.height = 45;
+    drawCover(small.getContext('2d'), photo, 0, 0, 36, 45);
+    ctx.drawImage(small, 0, 0, W, H);
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(0, 0, W, H);
+    const ph = Math.min(H, W * photo.naturalHeight / photo.naturalWidth);
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 40 * k; ctx.shadowOffsetY = 12 * k;
+    drawCover(ctx, photo, 0, (H - ph) / 2, W, ph); ctx.restore();
+  } else if (photo && layout === 'match') {
+    // solid bands in the colors of the photo's own top and bottom edges; the photo fades into them
+    const top = edgeColor(photo, 'top'), bottom = edgeColor(photo, 'bottom');
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, top); g.addColorStop(0.22, top); g.addColorStop(0.78, bottom); g.addColorStop(1, bottom);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const ph = Math.min(H, Math.round(W * photo.naturalHeight / photo.naturalWidth));
+    const off = document.createElement('canvas'); off.width = W; off.height = ph;
+    const o = off.getContext('2d'); o.imageSmoothingQuality = 'high';
+    drawCover(o, photo, 0, 0, W, ph);
+    const fade = o.createLinearGradient(0, 0, 0, ph);
+    fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(0.09, '#000'); fade.addColorStop(0.91, '#000'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+    o.globalCompositeOperation = 'destination-in'; o.fillStyle = fade; o.fillRect(0, 0, W, ph);
+    ctx.drawImage(off, 0, (H - ph) / 2);
+  } else if (photo && layout === 'panel') {
+    const ph = Math.round(H * 0.64), bar = 8 * k;
+    drawCover(ctx, photo, 0, 0, W, ph);
+    ctx.fillStyle = BRAND.teal; ctx.fillRect(0, ph, W, bar);
+    ctx.fillStyle = BRAND.blue; ctx.fillRect(0, ph + bar, W, H - ph - bar);
+    await drawPanel(ctx, p, c, W, H, k, ph + bar);
+    return;
+  } else if (photo && layout === 'stack') {
+    const gap = 10 * k, half = (H - gap) / 2;
+    let second = null; try { second = await loadImg(secondPhoto(p)); } catch (e) {}
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+    drawCover(ctx, photo, 0, 0, W, half);
+    drawCover(ctx, second || photo, 0, half + gap, W, half);
+  } else if (photo && layout === 'carousel') {
+    // one wide photo across two 4:5 slides; slide decides which half this canvas shows
+    const VW = 2 * W, s2 = Math.max(VW / photo.naturalWidth, H / photo.naturalHeight);
+    const w2 = photo.naturalWidth * s2, h2 = photo.naturalHeight * s2;
+    ctx.drawImage(photo, (VW - w2) / 2 - slide * W, (H - h2) / 2, w2, h2);
+  } else if (photo) {
     const s = Math.max(W / photo.naturalWidth, H / photo.naturalHeight);
     const w = photo.naturalWidth * s, hh = photo.naturalHeight * s;
     ctx.drawImage(photo, (W - w) / 2, (H - hh) / 2, w, hh);
@@ -624,7 +671,7 @@ async function drawComposite(canvas, p, fmt = 'feed') {
   }
   const pad = 70 * k;
   let labelTop = null;
-  const label = String(p.overlay?.label || '').trim();
+  const label = layout === 'full' ? String(p.overlay?.label || '').trim() : '';
   if (label) {
     const g2 = ctx.createLinearGradient(0, H*0.45, 0, H);
     g2.addColorStop(0, 'rgba(6,14,26,0)'); g2.addColorStop(1, 'rgba(6,14,26,.82)');
@@ -642,7 +689,7 @@ async function drawComposite(canvas, p, fmt = 'feed') {
     ctx.fillText(String(c.name || '').toUpperCase(), pad + 2, H - 60 * k); ctx.fillStyle = '#ffffff';
   }
   // amenity icon chip, bottom left (above the headline when there is one)
-  const icon = iconFor(p);
+  const icon = layout === 'carousel' && slide > 0 ? null : iconFor(p);
   if (icon) {
     const text = String(p.overlay?.iconLabel || ICONS[icon].label).trim();
     const d = 84 * k, ch = 64 * k, x0 = 40 * k;
@@ -662,7 +709,9 @@ async function drawComposite(canvas, p, fmt = 'feed') {
   const corner = p.overlay?.corner || c.defaultCorner || 'tr';
   const m = 44 * k;
   let logo = null; if (c.logoAssetId) { try { logo = await loadImg(c.logoAssetId); } catch (e) {} }
-  if (logo) {
+  if (layout === 'carousel' && slide > 0) {
+    // the logo sits on the first slide only
+  } else if (logo) {
     const s = Math.min(400 * k / logo.naturalWidth, 150 * k / logo.naturalHeight);
     const lw = logo.naturalWidth * s, lh = logo.naturalHeight * s;
     const lx = corner === 'tl' ? m : W - m - lw, ly = m;
@@ -689,12 +738,88 @@ async function drawComposite(canvas, p, fmt = 'feed') {
     let wl = null; try { wl = await loadImg(BRAND.logoWhite); } catch (e) {}
     if (wl) { const w = 150 * k, hh3 = w * wl.naturalHeight / wl.naturalWidth; ctx.globalAlpha = .95; ctx.drawImage(wl, W - 40 * k - w, H - 74 * k - hh3, w, hh3); ctx.globalAlpha = 1; }
   }
-  if (S.settings?.eho !== false) {
+  if (layout === 'carousel' && slide === 0) {
+    ctx.font = `800 ${40 * k}px "Schibsted Grotesk", Arial, sans-serif`; ctx.textAlign = 'right';
+    ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 10 * k;
+    ctx.fillText('Swipe ›', W - 40 * k, H - 70 * k);
+    ctx.shadowBlur = 0; ctx.textAlign = 'left';
+  } else if (S.settings?.eho !== false) {
     ctx.font = `700 ${22 * k}px "Atkinson Hyperlegible", Arial, sans-serif`; ctx.textAlign = 'right';
     ctx.fillStyle = 'rgba(255,255,255,.88)'; ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 6 * k;
     ctx.fillText('Equal Housing Opportunity', W - 40 * k, H - 34 * k);
     ctx.shadowBlur = 0; ctx.textAlign = 'left';
   }
+}
+function drawCover(ctx, img, x, y, w, h) {
+  const s = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  const iw = img.naturalWidth * s, ih = img.naturalHeight * s;
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  ctx.drawImage(img, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih);
+  ctx.restore();
+}
+function edgeColor(img, side) {
+  const cv = document.createElement('canvas'); cv.width = 24; cv.height = 24;
+  const x = cv.getContext('2d'); const sh = img.naturalHeight * 0.1;
+  x.drawImage(img, 0, side === 'top' ? 0 : img.naturalHeight - sh, img.naturalWidth, sh, 0, 0, 24, 24);
+  const d = x.getImageData(0, 0, 24, 24).data; let r = 0, g = 0, b = 0;
+  for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+  const n = d.length / 4;
+  return `rgb(${Math.round(r / n * 0.9)},${Math.round(g / n * 0.9)},${Math.round(b / n * 0.9)})`;
+}
+// Brand panel: amenity icon and name, city, community logo and Equal Housing line on Beacon Blue.
+async function drawPanel(ctx, p, c, W, H, k, top) {
+  const pad = 64 * k, icon = iconFor(p) || 'community';
+  const name = String(p.overlay?.iconLabel || (iconFor(p) ? ICONS[icon].label : p.title || c.name || '')).trim();
+  const d = 104 * k, cy = top + 58 * k + d / 2;
+  ctx.fillStyle = BRAND.teal; ctx.beginPath(); ctx.arc(pad + d / 2, cy, d / 2, 0, Math.PI * 2); ctx.fill();
+  try { const ii = await iconImage(icon, '#ffffff'); const is = d * 0.56; ctx.drawImage(ii, pad + d / 2 - is / 2, cy - is / 2, is, is); } catch (e) {}
+  ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle';
+  ctx.font = `800 ${72 * k}px "Schibsted Grotesk", Arial, sans-serif`;
+  ctx.fillText(name, pad + d + 30 * k, cy + 2 * k, W - pad * 2 - d - 30 * k);
+  const city = [c.city, c.state].filter(Boolean).join(', ');
+  if (city) {
+    ctx.font = `700 ${30 * k}px "Schibsted Grotesk", Arial, sans-serif`; ctx.fillStyle = BRAND.tan;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = `${3 * k}px`;
+    ctx.fillText(city.toUpperCase(), pad, cy + d / 2 + 50 * k);
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  }
+  ctx.textBaseline = 'alphabetic';
+  const baseY = H - 44 * k;
+  let logo = null; if (c.logoAssetId) { try { logo = await loadImg(c.logoAssetId); } catch (e) {} }
+  if (logo) {
+    const s = Math.min(380 * k / logo.naturalWidth, 72 * k / logo.naturalHeight);
+    ctx.drawImage(tintLogo(logo, '#ffffff'), pad, baseY - logo.naturalHeight * s, logo.naturalWidth * s, logo.naturalHeight * s);
+  } else {
+    ctx.font = `800 ${40 * k}px "Schibsted Grotesk", Arial, sans-serif`; ctx.fillStyle = '#ffffff';
+    ctx.fillText(String(c.name || '').toUpperCase(), pad, baseY);
+  }
+  if (S.settings?.eho !== false) {
+    ctx.font = `700 ${22 * k}px "Atkinson Hyperlegible", Arial, sans-serif`; ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillText('Equal Housing Opportunity', W - pad, baseY);
+    ctx.textAlign = 'left';
+  }
+}
+function isPhotoPost(p) { return !!p.assetId && p.mediaKind !== 'video' && !isFlyer(p); }
+// Second photo for the two-photo stack: chosen in the editor, or another library photo of the same amenity.
+function secondPhoto(p) {
+  if (p.overlay?.assetId2) return p.overlay.assetId2;
+  const m = mediaFor(p); if (!m) return null;
+  const tag = String(m.tag || '').split(':')[0];
+  const alt = Object.entries(S.media).filter(([, x]) => x.communityId === p.communityId && x.kind !== 'video' && x.assetId !== p.assetId && String(x.tag || '').split(':')[0] === tag && !String(x.tag || '').startsWith('floorplan'))
+    .sort((a, b) => a[0].localeCompare(b[0]));
+  return tag && alt.length ? alt[0][1].assetId : null;
+}
+function autoLayout(p) {
+  const key = x => `${x.date} ${x.time || ''} ${x.title || ''}`;
+  const month = String(p.date).slice(0, 7);
+  const idx = Object.values(S.posts).filter(x => x.communityId === p.communityId && String(x.date).startsWith(month) && isPhotoPost(x) && key(x) < key(p)).length;
+  return LAYOUT_CYCLE[idx % LAYOUT_CYCLE.length];
+}
+function layoutFor(p) {
+  if (!isPhotoPost(p)) return 'full';
+  if (p.status && p.status !== 'draft' && p.finalLayout) return p.finalLayout;
+  const chosen = p.overlay?.layout && p.overlay.layout !== 'auto' ? p.overlay.layout : autoLayout(p);
+  return chosen === 'stack' && !secondPhoto(p) ? 'panel' : chosen;
 }
 
 function mediaFor(p) { return p.assetId ? Object.values(S.media).find(x => x.assetId === p.assetId) : null; }
@@ -965,10 +1090,10 @@ function shiftMonth(n) {
 }
 
 // ---------- approve ----------
-async function renderFinal(p, fmt) {
+async function renderFinal(p, fmt, slide = 0) {
   if (!S.assets || p.mediaKind === 'video') return null;
   const cv = document.createElement('canvas');
-  await drawComposite(cv, p, fmt);
+  await drawComposite(cv, p, fmt, slide);
   const b = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.9));
   if (!b) return null;
   const up = await S.assets.upload(b, { type: 'image/jpeg' });
@@ -977,8 +1102,11 @@ async function renderFinal(p, fmt) {
 async function approve(id, p) {
   const social = p.platforms?.facebook || p.platforms?.instagram;
   const finalAssetId = social ? await renderFinal(p, 'feed').catch(e => { console.warn(e); return null; }) : null;
+  const carousel = social && layoutFor(p) === 'carousel';
+  const slide2 = carousel ? await renderFinal(p, 'feed', 1).catch(e => { console.warn(e); return null; }) : null;
+  const finalAssetIds = carousel && finalAssetId && slide2 ? [finalAssetId, slide2] : null;
   const finalGoogleAssetId = p.platforms?.google ? await renderFinal(p, 'google').catch(e => { console.warn(e); return null; }) : null;
-  await S.db.doc('posts/' + id).update({ status: 'approved', approvedAt: stamp(), finalAssetId: finalAssetId || null, finalGoogleAssetId: finalGoogleAssetId || null, updatedAt: stamp() });
+  await S.db.doc('posts/' + id).update({ status: 'approved', approvedAt: stamp(), finalAssetId: finalAssetId || null, finalAssetIds, finalLayout: social ? layoutFor(p) : null, finalGoogleAssetId: finalGoogleAssetId || null, updatedAt: stamp() });
 }
 function isReady(p) { const r = readiness(p); return !r.blockers.length && !r.warnings.some(w => w.startsWith('Fair housing')); }
 async function bulkApprove(from, to, label) {
@@ -1010,7 +1138,7 @@ function blankPost(date) {
 function openEditor(id, date) {
   const src = id ? S.posts[id] : blankPost(date);
   if (!src) return;
-  S.drawer = { id, draft: JSON.parse(JSON.stringify(src)), pv: 'feed', confirmDelete: false, rewriting: false };
+  S.drawer = { id, draft: JSON.parse(JSON.stringify(src)), pv: 'feed', slide: 0, confirmDelete: false, rewriting: false };
   renderDrawer();
 }
 function closeDrawer() { S.drawer = null; renderDrawer(); }
@@ -1050,7 +1178,8 @@ function renderDrawer() {
   const previewMedia = (p.mediaKind === 'video' && p.assetId) ? h('video', { class: 'preview-video', src: blob(p.assetId), controls: true, muted: true, playsinline: true }) : canvas;
   const preview = h('div', { class: 'preview-card' },
     h('div', { class: 'pv-tabs', role: 'tablist' },
-      ['feed', 'google'].map(k => h('button', { class: 'pv-tab', role: 'tab', 'aria-selected': String(D.pv === k), onclick: () => { D.pv = k; renderDrawer(); } }, k === 'feed' ? 'Facebook / Instagram' : 'Google Business'))),
+      ['feed', 'google'].map(k => h('button', { class: 'pv-tab', role: 'tab', 'aria-selected': String(D.pv === k), onclick: () => { D.pv = k; renderDrawer(); } }, k === 'feed' ? 'Facebook / Instagram' : 'Google Business')),
+      D.pv === 'feed' && layoutFor(p) === 'carousel' ? h('span', { class: 'pv-slides' }, [0, 1].map(i => h('button', { class: 'pv-tab', 'aria-pressed': String((D.slide || 0) === i), onclick: () => { D.slide = i; renderDrawer(); } }, `Slide ${i + 1}`))) : null),
     h('div', { class: 'preview-top' },
       h('span', { class: 'avatar', style: c.logoAssetId ? { backgroundImage: `url(${blob(c.logoAssetId)})`, backgroundColor: '#fff', backgroundSize: '82% auto', backgroundRepeat: 'no-repeat', boxShadow: 'inset 0 0 0 1px var(--line)' } : { background: c.color || 'var(--navy)' } }, c.logoAssetId ? '' : (c.short || '').slice(0, 3)),
       h('div', null, h('b', { text: c.name || 'Choose a community' }), h('div', { class: 'small muted', text: `${fmtShort(p.date)} · ${fmtTime(p.time)} · ${FORMATS[fmt].label}` }))),
@@ -1096,6 +1225,7 @@ function renderDrawer() {
       h('div', { class: 'row', style: { flexWrap: 'nowrap' } }, rewriteIn, h('button', { class: 'btn', disabled: D.rewriting, onclick: () => rewrite(rewriteIn.value) }, D.rewriting ? 'Writing…' : 'Rewrite'))) : null,
     h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Photo or video' }), mediaGrid,
       h('span', { class: 'hint', text: mediaItems.length ? 'Photos come from this community’s library.' : 'This community has no photos yet. Upload here, or add them on the Communities tab.' })),
+    isPhotoPost(p) ? layoutField(p, c, ro) : null,
     p.assetId && p.mediaKind !== 'video' && !isFlyer(p) ? h('div', { class: 'row' },
       h('div', { class: 'field' }, h('label', { for: 'pe-icon', text: 'Amenity icon' }),
         h('select', { id: 'pe-icon', disabled: ro, onchange: e => { p.overlay = { ...p.overlay, icon: e.target.value || undefined }; renderDrawer(); } },
@@ -1122,7 +1252,7 @@ function renderDrawer() {
     } else if (D.id) foot.append(h('button', { class: 'btn ghost danger', onclick: () => { D.confirmDelete = true; renderDrawer(); } }, 'Delete'));
     foot.append(h('span', { class: 'spacer' }));
     foot.append(h('button', { class: 'btn', onclick: () => saveDraft(false) }, D.id ? 'Save' : 'Save draft'));
-    if (p.status === 'approved') foot.append(h('button', { class: 'btn', onclick: async () => { await S.db.doc('posts/' + D.id).update({ status: 'draft', approvedAt: null, finalAssetId: null, finalGoogleAssetId: null, updatedAt: stamp() }); p.status = 'draft'; toast('Moved back to draft.'); renderDrawer(); } }, 'Unapprove'));
+    if (p.status === 'approved') foot.append(h('button', { class: 'btn', onclick: async () => { await S.db.doc('posts/' + D.id).update({ status: 'draft', approvedAt: null, finalAssetId: null, finalAssetIds: null, finalLayout: null, finalGoogleAssetId: null, updatedAt: stamp() }); p.status = 'draft'; toast('Moved back to draft.'); renderDrawer(); } }, 'Unapprove'));
     else if (['draft', 'held', 'failed'].includes(p.status)) foot.append(h('button', { class: 'btn beam', disabled: !!r.blockers.length, title: r.blockers[0] || '', onclick: () => saveDraft(true) }, 'Save & approve'));
   } else foot.append(h('span', { class: 'small muted', text: 'You can view this post but not change it.' }));
 
@@ -1137,12 +1267,12 @@ function renderDrawer() {
       foot));
   document.body.append(drawerEl);
   drawerEl.querySelector('.drawer-body').scrollTop = keepScroll;
-  drawComposite(canvas, p, fmt).catch(e => console.warn(e));
+  drawComposite(canvas, p, fmt, D.pv === 'feed' ? (D.slide || 0) : 0).catch(e => console.warn(e));
   function schedulePreview() {
     clearTimeout(previewTimer);
     previewTimer = setTimeout(() => {
       if (!S.drawer) return;
-      const cv = drawerEl?.querySelector('canvas.preview-canvas'); if (cv) drawComposite(cv, p, fmt).catch(() => {});
+      const cv = drawerEl?.querySelector('canvas.preview-canvas'); if (cv) drawComposite(cv, p, fmt, D.pv === 'feed' ? (D.slide || 0) : 0).catch(() => {});
       const pt = drawerEl?.querySelector('.preview-text');
       if (pt) pt.replaceChildren(...previewText(p, D.pv));
     }, 250);
@@ -1150,6 +1280,21 @@ function renderDrawer() {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.drawer && !document.querySelector('.modal')) closeDrawer(); });
 
+function layoutField(p, c, ro) {
+  const auto = autoLayout(p), cur = layoutFor(p), chosen = p.overlay?.layout || '';
+  const setO = patch => { p.overlay = { ...p.overlay, ...patch }; S.drawer.slide = 0; renderDrawer(); };
+  const photos = Object.values(S.media).filter(m => m.communityId === p.communityId && m.kind !== 'video' && m.assetId !== p.assetId && !String(m.tag || '').startsWith('floorplan'));
+  return h('div', { class: 'row' },
+    h('div', { class: 'field' }, h('label', { for: 'pe-layout', text: 'Facebook & Instagram layout (4:5)' }),
+      h('select', { id: 'pe-layout', disabled: ro, onchange: e => setO({ layout: e.target.value || undefined }) },
+        h('option', { value: '', selected: !chosen }, `Auto rotation (${LAYOUTS[auto === 'stack' && !secondPhoto(p) ? 'panel' : auto]})`),
+        Object.entries(LAYOUTS).map(([k2, l]) => h('option', { value: k2, selected: chosen === k2 }, l))),
+      cur !== (chosen || auto) && (chosen || auto) === 'stack' ? h('span', { class: 'hint', text: 'No second photo of this amenity in the library, so the brand panel is used. Pick a second photo to use the stack.' }) : null),
+    (chosen || auto) === 'stack' ? h('div', { class: 'field' }, h('label', { for: 'pe-photo2', text: 'Second photo' }),
+      h('select', { id: 'pe-photo2', disabled: ro, onchange: e => setO({ assetId2: e.target.value || undefined }) },
+        h('option', { value: '', selected: !p.overlay?.assetId2 }, 'Auto (same amenity)'),
+        photos.map(m => h('option', { value: m.assetId, selected: p.overlay?.assetId2 === m.assetId }, m.caption || m.tag || 'Photo')))) : null);
+}
 function previewText(p, pv) {
   const link = linkFor(p);
   if (pv === 'google') return [p.gbpCaption || p.caption || '', link ? h('div', { class: 'cta' }, h('span', { class: 'cta-btn', text: 'Learn more' }), h('span', { class: 'src', text: link })) : ''];
@@ -1163,9 +1308,9 @@ async function saveDraft(andApprove) {
   const p = D.draft;
   if (!p.communityId) { toast('Choose a community first.', true); return; }
   const orig = D.id ? S.posts[D.id] : null;
-  const strip = x => JSON.stringify({ ...x, status: 0, approvedAt: 0, finalAssetId: 0, finalGoogleAssetId: 0, updatedAt: 0 });
+  const strip = x => JSON.stringify({ ...x, status: 0, approvedAt: 0, finalAssetId: 0, finalAssetIds: 0, finalLayout: 0, finalGoogleAssetId: 0, updatedAt: 0 });
   const contentChanged = orig && strip(orig) !== strip(p);
-  if (orig && orig.status === 'approved' && contentChanged) { p.status = 'draft'; p.approvedAt = null; p.finalAssetId = null; p.finalGoogleAssetId = null; }
+  if (orig && orig.status === 'approved' && contentChanged) { p.status = 'draft'; p.approvedAt = null; p.finalAssetId = null; p.finalAssetIds = null; p.finalLayout = null; p.finalGoogleAssetId = null; }
   try {
     const id = await savePost(D.id, p);
     D.id = id;
