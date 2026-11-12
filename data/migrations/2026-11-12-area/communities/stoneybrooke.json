@@ -1,0 +1,449 @@
+{
+ "area": {
+  "source": "OpenStreetMap",
+  "attribution": "\u00a9 OpenStreetMap contributors",
+  "fetchedAt": "2026-11-12T19:36:36Z",
+  "center": {
+   "lat": 42.34977,
+   "lon": -83.44026,
+   "matched": "8500, Brooke Park Drive, Canton Township, Wayne County, Michigan, 48187, United States"
+  },
+  "radiusMiles": 5.0,
+  "places": [
+   {
+    "name": "Holliday Nature Preserve",
+    "category": "Parks & nature",
+    "type": "nature reserve",
+    "miles": 0.8,
+    "osm": "https://www.openstreetmap.org/way/30478951"
+   },
+   {
+    "name": "City Park",
+    "category": "Parks & nature",
+    "type": "nature reserve",
+    "miles": 1.5,
+    "osm": "https://www.openstreetmap.org/way/325976693"
+   },
+   {
+    "name": "Windsor Park Subdivision West Park",
+    "category": "Parks & nature",
+    "type": "park",
+    "miles": 1.8,
+    "osm": "https://www.openstreetmap.org/way/1082384073"
+   },
+   {
+    "name": "Cannon Park",
+    "category": "Parks & nature",
+    "type": "park",
+    "miles": 2.2,
+    "osm": "https://www.openstreetmap.org/way/406198098"
+   },
+   {
+    "name": "Tattan Park",
+    "category": "Parks & nature",
+    "type": "park",
+    "miles": 2.8,
+    "osm": "https://www.openstreetmap.org/way/390611028"
+   },
+   {
+    "name": "Village Center Park",
+    "category": "Parks & nature",
+    "type": "park",
+    "miles": 3.1,
+    "osm": "https://www.openstreetmap.org/way/1076735818"
+   },
+   {
+    "name": "Oak Grove Trailhead",
+    "category": "Trails",
+    "type": "parking",
+    "miles": 3.1,
+    "osm": "https://www.openstreetmap.org/way/289995152"
+   },
+   {
+    "name": "Wayne Avenue Trailhead",
+    "category": "Trails",
+    "type": "locality",
+    "miles": 4.7,
+    "osm": "https://www.openstreetmap.org/node/13822480097"
+   },
+   {
+    "name": "Hospital Trailhead",
+    "category": "Trails",
+    "type": "locality",
+    "miles": 4.9,
+    "osm": "https://www.openstreetmap.org/node/13822480098"
+   },
+   {
+    "name": "Morton-Taylor Trailhead",
+    "category": "Trails",
+    "type": "parking",
+    "miles": 5.0,
+    "osm": "https://www.openstreetmap.org/way/358378306"
+   },
+   {
+    "name": "Coffee & Cream",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 1.1,
+    "osm": "https://www.openstreetmap.org/node/7472289928"
+   },
+   {
+    "name": "Plymouth Roast",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 1.2,
+    "osm": "https://www.openstreetmap.org/node/14069185401"
+   },
+   {
+    "name": "Biggby Coffee",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 1.4,
+    "osm": "https://www.openstreetmap.org/node/12410072827"
+   },
+   {
+    "name": "Starbucks",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 1.8,
+    "osm": "https://www.openstreetmap.org/node/12769364846"
+   },
+   {
+    "name": "Kokabon Coffee",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 1.9,
+    "osm": "https://www.openstreetmap.org/node/3115537044"
+   },
+   {
+    "name": "Espresso Elevado",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 2.0,
+    "osm": "https://www.openstreetmap.org/way/1056335253"
+   },
+   {
+    "name": "Golden Corral",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/way/378917830"
+   },
+   {
+    "name": "Aqua",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/way/287751501"
+   },
+   {
+    "name": "Station 885",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 2.4,
+    "osm": "https://www.openstreetmap.org/way/97050183"
+   },
+   {
+    "name": "Eats and Sweets",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 2.4,
+    "osm": "https://www.openstreetmap.org/way/460596181"
+   },
+   {
+    "name": "The Sheikh Restaurant",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 2.9,
+    "osm": "https://www.openstreetmap.org/node/13429030401"
+   },
+   {
+    "name": "Buffalo Wild Wings",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 3.0,
+    "osm": "https://www.openstreetmap.org/way/533984573"
+   },
+   {
+    "name": "Dairy-Go-Round",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 1.7,
+    "osm": "https://www.openstreetmap.org/node/5370926644"
+   },
+   {
+    "name": "Baskin-Robbins",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 2.0,
+    "osm": "https://www.openstreetmap.org/node/9693252835"
+   },
+   {
+    "name": "Carvel",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 2.0,
+    "osm": "https://www.openstreetmap.org/node/2981923651"
+   },
+   {
+    "name": "Dairy King",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/way/97050182"
+   },
+   {
+    "name": "Alpine Chocolate Haus",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/node/14052008452"
+   },
+   {
+    "name": "Menchie's",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 2.9,
+    "osm": "https://www.openstreetmap.org/node/13953005247"
+   },
+   {
+    "name": "1 For All Brewery",
+    "category": "Breweries & wine",
+    "type": "brewery",
+    "miles": 1.4,
+    "osm": "https://www.openstreetmap.org/node/14312341321"
+   },
+   {
+    "name": "Bartisan Kitchen And Bar",
+    "category": "Breweries & wine",
+    "type": "bar",
+    "miles": 1.8,
+    "osm": "https://www.openstreetmap.org/node/13275990117"
+   },
+   {
+    "name": "The Bowery Grille & Pub",
+    "category": "Breweries & wine",
+    "type": "pub",
+    "miles": 1.9,
+    "osm": "https://www.openstreetmap.org/way/306588818"
+   },
+   {
+    "name": "Plymouth Pub",
+    "category": "Breweries & wine",
+    "type": "pub",
+    "miles": 2.0,
+    "osm": "https://www.openstreetmap.org/way/414577790"
+   },
+   {
+    "name": "Supernatural Brewing and Spirits",
+    "category": "Breweries & wine",
+    "type": "brewery",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/way/1108087325"
+   },
+   {
+    "name": "The Highline Room",
+    "category": "Breweries & wine",
+    "type": "bar",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/node/626797236"
+   },
+   {
+    "name": "Pure Pastures",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 1.8,
+    "osm": "https://www.openstreetmap.org/node/12512770457"
+   },
+   {
+    "name": "Farmers Market",
+    "category": "Groceries & markets",
+    "type": "marketplace",
+    "miles": 2.0,
+    "osm": "https://www.openstreetmap.org/node/10901529633"
+   },
+   {
+    "name": "Meijer",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/way/378400579"
+   },
+   {
+    "name": "Westborn Market",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/way/97050181"
+   },
+   {
+    "name": "Kroger",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 2.2,
+    "osm": "https://www.openstreetmap.org/way/413097767"
+   },
+   {
+    "name": "Zerbos Health Foods",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 3.3,
+    "osm": "https://www.openstreetmap.org/node/7012727750"
+   },
+   {
+    "name": "Marshalls",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 1.9,
+    "osm": "https://www.openstreetmap.org/node/4027037887"
+   },
+   {
+    "name": "Target",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 2.4,
+    "osm": "https://www.openstreetmap.org/way/260864943"
+   },
+   {
+    "name": "Ross",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 2.5,
+    "osm": "https://www.openstreetmap.org/node/12312987424"
+   },
+   {
+    "name": "Burlington",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 2.6,
+    "osm": "https://www.openstreetmap.org/way/533975386"
+   },
+   {
+    "name": "Value World",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 2.6,
+    "osm": "https://www.openstreetmap.org/way/378847023"
+   },
+   {
+    "name": "JCPenney",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 2.6,
+    "osm": "https://www.openstreetmap.org/node/366912186"
+   },
+   {
+    "name": "Penn Theatre",
+    "category": "Arts & entertainment",
+    "type": "cinema",
+    "miles": 2.0,
+    "osm": "https://www.openstreetmap.org/node/625658161"
+   },
+   {
+    "name": "Emagine Canton",
+    "category": "Arts & entertainment",
+    "type": "cinema",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/way/307643110"
+   },
+   {
+    "name": "Plymouth Historical Museum",
+    "category": "Arts & entertainment",
+    "type": "museum",
+    "miles": 2.1,
+    "osm": "https://www.openstreetmap.org/node/625660566"
+   },
+   {
+    "name": "Plymouth Community Arts Council",
+    "category": "Arts & entertainment",
+    "type": "arts centre",
+    "miles": 2.9,
+    "osm": "https://www.openstreetmap.org/way/1193734135"
+   },
+   {
+    "name": "MJR Westland Grand Digital Cinema 16",
+    "category": "Arts & entertainment",
+    "type": "cinema",
+    "miles": 3.1,
+    "osm": "https://www.openstreetmap.org/way/533984565"
+   },
+   {
+    "name": "Canton Historical Museum",
+    "category": "Arts & entertainment",
+    "type": "museum",
+    "miles": 4.2,
+    "osm": "https://www.openstreetmap.org/way/384268522"
+   },
+   {
+    "name": "Arctic Arena",
+    "category": "Recreation",
+    "type": "ice rink",
+    "miles": 1.6,
+    "osm": "https://www.openstreetmap.org/way/436214937"
+   },
+   {
+    "name": "Plymouth Arts and Recreation Complex",
+    "category": "Recreation",
+    "type": "sports centre",
+    "miles": 2.2,
+    "osm": "https://www.openstreetmap.org/way/1092655145"
+   },
+   {
+    "name": "RC Track",
+    "category": "Recreation",
+    "type": "sports centre",
+    "miles": 2.2,
+    "osm": "https://www.openstreetmap.org/way/951332843"
+   },
+   {
+    "name": "Plymouth Cultural Center",
+    "category": "Recreation",
+    "type": "ice rink",
+    "miles": 2.3,
+    "osm": "https://www.openstreetmap.org/way/287635098"
+   },
+   {
+    "name": "Castle Gardens Pool Association",
+    "category": "Recreation",
+    "type": "sports centre",
+    "miles": 2.9,
+    "osm": "https://www.openstreetmap.org/way/325976690"
+   },
+   {
+    "name": "Mickey's Golf Range",
+    "category": "Recreation",
+    "type": "golf course",
+    "miles": 3.1,
+    "osm": "https://www.openstreetmap.org/way/30479091"
+   },
+   {
+    "name": "Plymouth District Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 2.0,
+    "osm": "https://www.openstreetmap.org/way/287629842"
+   },
+   {
+    "name": "William P. Faust Westland Public Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 2.5,
+    "osm": "https://www.openstreetmap.org/way/234909044"
+   },
+   {
+    "name": "Canton Public Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 4.4,
+    "osm": "https://www.openstreetmap.org/relation/5716929"
+   },
+   {
+    "name": "Garden City Public Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 4.6,
+    "osm": "https://www.openstreetmap.org/node/3241959348"
+   }
+  ]
+ }
+}

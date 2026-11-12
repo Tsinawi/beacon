@@ -26,6 +26,7 @@
   --t-funday: #c77c06;
   --t-video: #8a44c4;
   --t-special: #2e8a3e;
+  --t-local: #1f6fb2;
   --t-other: #6b7789;
 
   --ok: #1e7f45;
@@ -46,7 +47,7 @@
   :root:not([data-theme="light"]) {
     --bg: #0c1724; --surface: #13233a; --surface-2: #1a2d46; --line: #2a405c;
     --fg: #e8eef5; --muted: #98a8ba; --navy: #9cc5e6; --header: #0b1c2e; --beam: #55c1c7; --beam-ink: #06202f; --coral: #f2a397; --tan: #3b3427; --focus: #7fd3d8;
-    --t-amenity: #4cc2ae; --t-floorplan: #8b98f2; --t-holiday: #ef7a72; --t-funday: #f0a83a; --t-video: #bf8bea; --t-special: #6cc77a; --t-other: #98a4b5;
+    --t-amenity: #4cc2ae; --t-floorplan: #8b98f2; --t-holiday: #ef7a72; --t-funday: #f0a83a; --t-video: #bf8bea; --t-special: #6cc77a; --t-local: #6fb0ea; --t-other: #98a4b5;
     --ok: #6fd193; --ok-bg: #173527; --warn: #f2bd5c; --warn-bg: #3a2c12; --bad: #f28b82; --bad-bg: #3d1c1a;
     --shadow: 0 10px 30px rgba(0, 0, 0, .5);
     color-scheme: dark;
@@ -55,7 +56,7 @@
 :root[data-theme="dark"] {
   --bg: #0c1724; --surface: #13233a; --surface-2: #1a2d46; --line: #2a405c;
   --fg: #e8eef5; --muted: #98a8ba; --navy: #9cc5e6; --header: #0b1c2e; --beam: #55c1c7; --beam-ink: #06202f; --coral: #f2a397; --tan: #3b3427; --focus: #7fd3d8;
-  --t-amenity: #4cc2ae; --t-floorplan: #8b98f2; --t-holiday: #ef7a72; --t-funday: #f0a83a; --t-video: #bf8bea; --t-special: #6cc77a; --t-other: #98a4b5;
+  --t-amenity: #4cc2ae; --t-floorplan: #8b98f2; --t-holiday: #ef7a72; --t-funday: #f0a83a; --t-video: #bf8bea; --t-special: #6cc77a; --t-local: #6fb0ea; --t-other: #98a4b5;
   --ok: #6fd193; --ok-bg: #173527; --warn: #f2bd5c; --warn-bg: #3a2c12; --bad: #f28b82; --bad-bg: #3d1c1a;
   --shadow: 0 10px 30px rgba(0, 0, 0, .5);
   color-scheme: dark;
@@ -299,6 +300,14 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .harvest .state.bad { color: var(--bad); } .harvest .state.ok { color: var(--ok); } .harvest .state.warn { color: var(--warn); }
 .src { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
 .swatch { width: 38px; height: 38px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: none; cursor: pointer; }
+.area-list { display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; max-height: 320px; overflow: auto; }
+.area-cat { display: grid; grid-template-columns: 140px minmax(0,1fr); gap: 10px; font-size: 13px; }
+@media (max-width: 520px) { .area-cat { grid-template-columns: minmax(0,1fr); gap: 2px; } }
+.area-cat-name { font-weight: 700; color: var(--muted); }
+.area-places { display: flex; flex-wrap: wrap; gap: 4px 12px; min-width: 0; }
+.area-place { color: var(--fg); text-decoration: none; }
+.area-place:hover { text-decoration: underline; }
+.area-place .mono { color: var(--muted); font-size: 11.5px; }
 .link-row { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: 10px; align-items: center; font-size: 13.5px; }
 .link-row input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 7px 10px; font-family: var(--f-mono); font-size: 12.5px; }
 @media (max-width: 520px) { .link-row { grid-template-columns: minmax(0,1fr); gap: 4px; } }
@@ -363,6 +372,7 @@ const TYPES = {
   funday:    { label: 'Fun day',    tok: '--t-funday' },
   video:     { label: 'Video tour', tok: '--t-video' },
   special:   { label: 'Special',    tok: '--t-special' },
+  local:     { label: 'Local spotlight', tok: '--t-local' },
   other:     { label: 'Other',      tok: '--t-other' },
 };
 const BRAND = { blue: '#153a58', teal: '#55c1c7', coral: '#ee8f80', tan: '#f6ecd6', logo: 'b03616ee219788d7514c6e86e73656b4', logoWhite: 'd04578bbf195e2568cfe504c34a3582a' };
@@ -393,11 +403,12 @@ const ICONS = {
   "fireplace":{"label":"Fireplace","svg":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\" />"},
   "renovated":{"label":"Renovated homes","svg":"<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\" /> <path d=\"M20 2v4\" /> <path d=\"M22 4h-4\" /> <circle cx=\"4\" cy=\"20\" r=\"2\" />"},
   "community":{"label":"Community","svg":"<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />"},
+  "local":{"label": "Local spotlight", "svg": "<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\" /> <circle cx=\"12\" cy=\"10\" r=\"3\" />"},
   "townhome":{"label":"Townhomes","svg":"<path d=\"M10 12h4\" /> <path d=\"M10 8h4\" /> <path d=\"M14 21v-3a2 2 0 0 0-4 0v3\" /> <path d=\"M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2\" /> <path d=\"M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16\" />"}};
 const ICON_WORDS = [['coffee','coffee'],['pool','pool'],['sundeck','pool'],['fitness','fitness'],['gym','fitness'],['bark','barkpark'],['dog park','barkpark'],['pet','pets'],['clubhouse','clubhouse'],['playground','playground'],['picnic','picnic'],['balcon','balcony'],['patio','balcony'],['washer','laundry'],['laundry','laundry'],['parking','parking'],['garage','parking'],['kitchen','kitchen'],['bedroom','bedroom'],['bath','bathroom'],['closet','closet'],['fireplace','fireplace'],['living','living'],['maintenance','maintenance'],['trash','trash'],['storage','storage'],['central air','ac'],['air condition','ac'],['renovat','renovated'],['townhome','townhome'],['multilevel','townhome'],['grounds','outdoor'],['outdoor','outdoor']];
 const DEFAULT_SLOTS = ['10:00', '11:00', '12:00', '13:00', '14:00'];
 const LINKS = { home: 'Home page', floorplans: 'Floor plans', amenities: 'Amenities', tour: 'Schedule a tour', gallery: 'Photo gallery', neighborhood: 'Neighborhood' };
-const LINK_FOR_TYPE = { amenity: 'amenities', floorplan: 'floorplans', video: 'tour', special: 'home', holiday: 'home', funday: 'home', other: 'home' };
+const LINK_FOR_TYPE = { amenity: 'amenities', floorplan: 'floorplans', video: 'tour', special: 'home', local: 'neighborhood', holiday: 'home', funday: 'home', other: 'home' };
 const PLATFORMS = { facebook: 'Facebook', instagram: 'Instagram', google: 'Google' };
 const LIMITS = { instagram: 2200, facebook: 5000, google: 1500 };
 const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -521,6 +532,7 @@ function readiness(p) {
   const hits = complianceHits([p.title, p.caption, p.gbpCaption, p.overlay?.label].join('\n'));
   for (const x of hits) warnings.push(`Fair housing review: “${x.phrase}”. ${x.why}`);
   if (!p.assetId && p.type !== 'video' && !['holiday','funday'].includes(p.type)) warnings.push('No photo chosen. A branded graphic will be used instead.');
+  if (p.type === 'local') warnings.push('Local spotlight: confirm the place is still open and the details are right before approving.');
   const lk = linkKeyFor(p);
   if (lk && (p.platforms?.facebook || p.platforms?.google) && !linkFor(p)) warnings.push(`No tracking link saved for “${LINKS[lk] || lk}”. Add it on the Communities tab, or the post goes out without a link.`);
   if (!blockers.length && !warnings.length) ok.push('Ready to approve.');
@@ -674,6 +686,7 @@ function iconFor(p) {
   const chosen = p.overlay?.icon;
   if (chosen === 'none') return null;
   if (chosen && ICONS[chosen]) return chosen;
+  if (p.type === 'local') return 'local';
   if (p.type !== 'amenity' || !p.assetId || p.mediaKind === 'video' || isFlyer(p)) return null;
   const m = mediaFor(p) || {};
   for (const text of [p.title, (m.tag || '') + ' ' + (m.caption || '')]) {
@@ -1184,10 +1197,21 @@ AMENITIES (from website): ${(c.amenities || []).join('; ') || '(none on file)'}
 FLOOR PLANS (from website):
 ${fp}
 CURRENT SPECIALS (from website; only mention one in a post dated on or before its end date): ${(c.specials || []).filter(s => !s.endsOn || s.endsOn >= ds(today)).map(s => s.text + (s.endsOn ? ` (ends ${s.endsOn})` : '')).join('; ') || '(none on file)'}
-NEIGHBORHOOD (from website): ${(c.neighborhood || []).join('; ') || '(none on file)'}`;
+NEIGHBORHOOD (from website): ${(c.neighborhood || []).join('; ') || '(none on file)'}
+${areaBlock(c)}`;
+}
+function areaBlock(c) {
+  const places = (c.area?.places || []);
+  const byCat = {};
+  for (const p of places) (byCat[p.category] = byCat[p.category] || []).push(`${p.name} (${p.type}, about ${p.miles} mi)`);
+  const list = Object.entries(byCat).map(([k, v]) => `- ${k}: ${v.join('; ')}`).join('\n');
+  return `NEARBY PLACES (OpenStreetMap, straight-line distance from the community):
+${list || '(none on file)'}
+AREA NOTES (pasted by the marketer, e.g. from Apartments.com): ${String(c.areaNotes || '').trim() || '(none)'}`;
 }
 const RULES = `RULES:
-- Fair housing: never describe who the ideal resident is. Do not mention families, children, age groups, students, singles, couples, religion, national origin, disability, or "safe neighborhood". Describe the property, amenities, and events. Avoid "master bedroom"; say "primary bedroom".
+- Fair housing: never describe who the ideal resident is. Do not mention families, children, age groups, students, singles, couples, religion, national origin, disability, or "safe neighborhood". Describe the property, amenities, and events. Avoid "master bedroom"; say "primary bedroom". Never mention schools, school districts or places of worship, even when they appear in area notes.
+- Local spotlight posts: feature one real place from NEARBY PLACES or AREA NOTES by its exact name, with its type and "about N miles away". Don't invent hours, menu items, prices, events or quality claims; invite people to share their favorite instead. Prefer local independents over national chains. Skip anything that looks private, members-only or like a subdivision.
 - Facts: use only facts listed above. If a post needs a fact that is not on file (a specific amenity, a floor plan's details, a price, a special), do not invent it. Set "needsData" to a short note naming exactly what is missing and still write a caption with a clear [bracketed placeholder] for the missing fact.
 - No prices unless they appear in CURRENT SPECIALS.
 - Captions: 40–120 words, 1–2 emoji at most, end with a soft call to action (e.g. "Schedule a tour at the link in bio" for Instagram-style copy, or "Call or stop by the leasing office").
@@ -1234,7 +1258,7 @@ ${communityBlock(c)}
 
 MONTH: ${MONTHS[first.getMonth()]} ${first.getFullYear()} (${ds(first)} to ${ds(last)})
 CADENCE: ${S.settings?.cadence || '3-4'} posts per week, spread across different weekdays.
-CONTENT MIX (relative weights): ${Object.entries(mix).map(([k, v]) => `${k}=${v}`).join(', ') || 'amenity=3, floorplan=2, holiday=2, funday=2, video=1'}
+CONTENT MIX (relative weights): ${Object.entries(mix).map(([k, v]) => `${k}=${v}`).join(', ') || 'amenity=3, floorplan=2, holiday=2, funday=2, local=2, video=1'}
 Use real holidays and widely known "national days" in this month for holiday and funday posts.
 ALREADY SCHEDULED (do not duplicate topics or dates):
 ${keep.map(([, p]) => `- ${p.date} ${p.type}: ${p.title}`).join('\n') || '(none)'}
@@ -1313,6 +1337,7 @@ function renderCommunities(main) {
     const out = { ...c };
     if ('_amenities' in c) out.amenities = lines(c._amenities);
     if ('_neighborhood' in c) out.neighborhood = lines(c._neighborhood);
+    if ('_areaNotes' in c) { out.areaNotes = c._areaNotes.trim(); out.areaNotesUpdatedAt = stamp(); }
     if ('_specials' in c) out.specials = lines(c._specials).map(t => ({ text: t, seenAt: (comm(id).specials || []).find(s => s.text === t)?.seenAt || null, source: 'manual' }));
     if ('_floorPlans' in c) out.floorPlans = lines(c._floorPlans).map(l => { const [name, beds, baths, sqft, notes] = l.split('|').map(x => x.trim()); return { name, beds: beds ? Number(beds) || beds : null, baths: baths ? Number(baths) || baths : null, sqft: sqft ? Number(sqft) || sqft : null, notes: notes || '' }; });
     for (const k of Object.keys(out)) if (k.startsWith('_')) delete out[k];
@@ -1362,12 +1387,26 @@ function renderCommunities(main) {
       area('Floor plans (Name | beds | baths | sq ft | notes)', 'floorPlans', (c.floorPlans || []).map(f => [f.name, f.beds, f.baths, f.sqft, f.notes].map(x => x ?? '').join(' | ').replace(/( \| )+$/, '')).join('\n'), 'Example: The Aspen | 2 | 2 | 1100 | den, attached garage', 4),
       area('Current specials (one per line)', 'specials', (c.specials || []).map(s => s.text).join('\n'), (c.specials || []).some(s => s.seenAt) ? 'Seen on website: ' + (c.specials || []).filter(s => s.seenAt).map(s => new Date(s.seenAt).toLocaleDateString()).join(', ') : 'Posts that mention a special are re-checked against the website before publishing.', 3),
       area('Neighborhood (one per line)', 'neighborhood', (c.neighborhood || []).join('\n'), null, 3),
+      areaPanel(c),
+      area('Area notes (paste from Apartments.com or write your own)', 'areaNotes', c.areaNotes || '', c.areaNotesUpdatedAt ? 'Last updated ' + new Date(c.areaNotesUpdatedAt).toLocaleDateString() + '. Claude uses these for local spotlights and background. School and church details are ignored.' : 'Paste the neighborhood and points-of-interest section from the Apartments.com listing. Claude uses it for local spotlights and background.', 5),
       h('div', { class: 'field' }, h('span', { class: 'lbl', text: `Photo & video library (${media.length})` }),
         h('div', { class: 'media-grid' },
           media.map(([, m]) => h('div', { class: 'media-tile', title: m.caption || '', style: m.kind === 'video' ? {} : { backgroundImage: `url(${blob(m.assetId)})` } }, m.kind === 'video' ? h('span', { class: 'vid', text: 'VIDEO' }) : null)),
           S.assets && !ro ? h('button', { class: 'media-tile upload-tile', onclick: () => fileIn.click() }, '+ Add') : null, fileIn),
         h('span', { class: 'hint', text: 'Website photos are added here automatically on each refresh. You can also upload your own.' })),
       !ro ? h('div', { class: 'toolbar' }, h('span', { class: 'spacer' }), h('button', { class: 'btn primary', onclick: save }, 'Save community')) : null)));
+}
+function areaPanel(c) {
+  const places = c.area?.places || [];
+  const byCat = {};
+  for (const p of places) (byCat[p.category] = byCat[p.category] || []).push(p);
+  return h('div', { class: 'field' },
+    h('span', { class: 'lbl', text: `Around the area (${places.length})` }),
+    places.length ? h('div', { class: 'area-list' }, Object.entries(byCat).map(([cat, ps]) => h('div', { class: 'area-cat' },
+      h('div', { class: 'area-cat-name', text: cat }),
+      h('div', { class: 'area-places' }, ps.map(p => h('a', { class: 'area-place', href: p.osm, target: '_blank', rel: 'noopener', title: p.type }, p.name, h('span', { class: 'mono', text: ` ${p.miles} mi` }))))))) :
+      h('span', { class: 'hint', text: 'Nearby places are filled in by the monthly run from OpenStreetMap.' }),
+    places.length ? h('span', { class: 'hint', text: `Straight-line distances. Map data © OpenStreetMap contributors · updated ${new Date(c.area.fetchedAt).toLocaleDateString()}` }) : null);
 }
 function addCommunity() {
   const name = h('input', { type: 'text', id: 'nc-name', placeholder: 'e.g. Whethersfield' });
@@ -1388,7 +1427,7 @@ function addCommunity() {
 function renderSettings(main) {
   const st = JSON.parse(JSON.stringify(S.settings || {}));
   const ro = !S.canWrite;
-  st.mix = st.mix || { amenity: 3, floorplan: 2, holiday: 2, funday: 2, video: 1 };
+  st.mix = { amenity: 3, floorplan: 2, holiday: 2, funday: 2, local: 2, video: 1, ...(st.mix || {}) };
   const mixRows = Object.keys(st.mix).map(k => {
     const out = h('span', { class: 'mono', text: st.mix[k] });
     return h('div', { class: 'mix-row' }, h('label', { for: 'mix-' + k, style: { display: 'flex', gap: '6px', alignItems: 'center' } }, h('i', { class: 'tdot', style: { background: typeColor(k) } }), (TYPES[k] || TYPES.other).label),

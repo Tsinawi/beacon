@@ -54,6 +54,20 @@ Do not overwrite fields the site doesn't cover: `hashtagSet`, `links`, `audience
 
 Keep a list of what changed (new photos, new or ended specials, amenity or floor plan changes) for the summary.
 
+## 3b. Refresh the area (quarterly)
+
+If the community's `area.fetchedAt` is missing or more than 90 days old:
+
+```
+python3 tools/nearby.py "<address>" <work>/<slug>/area.json --name "<community name>"
+```
+
+The tool finds the community by street address, or by name when that lands within 8 miles of the address's town. Check that `center.matched` names the right town. If it can't place the community, or places it wrong, skip the area update and say so in the summary. You can rerun it with `--lat`/`--lon` when you know the spot.
+
+Read the place list before saving. Drop anything private, members-only, school- or church-affiliated, a subdivision or homeowners' association, or obviously closed. Then `update` the community with `{area: <file contents>}`.
+
+`areaNotes` is text the marketer pasted (for example from Apartments.com). Use it as background, but never overwrite it.
+
 ## 4. Draft the target month
 
 Read `settings/brand` (voice, cadence, mix, timeSlots) and every post for the community from 4 months before the target month through the end of the target month.
@@ -66,6 +80,11 @@ Plan 3–4 posts per week, spread over different weekdays, following the content
 - **Fun day:** widely known national days and seasonal moments. No politics, religion or elections.
 - **Amenity:** one amenity per post.
 - **Floor plan:** one plan per post.
+- **Local spotlight:** one real place from `area.places` or `areaNotes`, by its exact name, with its type and "about N miles away".
+  - Don't invent hours, menu items, prices or events. Invite people to share their favorite instead.
+  - Prefer local independents over national chains, and don't feature the same place twice within 6 months.
+  - Use the branded graphic (`assetId: null`) with the place name as `overlay.label` (2–4 words). The command center adds the "Local spotlight" map-pin chip.
+  - Set `linkKey: "neighborhood"`.
 - **Video tour:** while Reels from photos are not built yet, write the caption and set `needsData: "Upload the walkthrough video (vertical, under 90 seconds works best for Reels)."`
 
 **Fresh content first. No repeats inside 3 months.**
@@ -75,7 +94,7 @@ Plan 3–4 posts per week, spread over different weekdays, following the content
 - Once something is more than 3 months old, it can come back with a new caption and, when there is one, a different photo.
 
 **Writing rules.** These are the same as the command center's generator:
-- Fair housing: never describe who the ideal resident is. Don't mention families, children, age groups, students, singles, couples, religion, national origin, disability, or "safe neighborhood". Describe the property, amenities and events. Say "primary bedroom".
+- Fair housing: never describe who the ideal resident is. Don't mention families, children, age groups, students, singles, couples, religion, national origin, disability, or "safe neighborhood". Describe the property, amenities and events. Say "primary bedroom". Never mention schools, school districts or places of worship, even when area notes do.
 - Use only facts from the profile. If a fact is missing, set `needsData` to what is missing and use a [bracketed placeholder].
 - No prices unless they are in a current special. Mention a special only if it runs through the post date (`endsOn` on or after the post date).
 - Captions are 40–120 words with 1–2 emoji, and end with a soft call to action. No URLs in captions.
@@ -84,7 +103,7 @@ Plan 3–4 posts per week, spread over different weekdays, following the content
 - `communityId`, `date`, `type`, `title`, `caption`, `gbpCaption: ""`, `status: "draft"`, `needsData`, `createdBy: "monthly-run"`, `updatedAt`
 - `time`: `settings.timeSlots[(communityIndex + dayOfMonth) % timeSlots.length]`. `communityIndex` is the community's position when active communities are sorted by name.
 - `hashtags`: the community's `hashtagSet` plus 1–2 tags specific to the post
-- `linkKey`: amenity → `amenities`, floorplan → `floorplans`, video → `tour`, everything else → `home`
+- `linkKey`: amenity → `amenities`, floorplan → `floorplans`, video → `tour`, local → `neighborhood`, everything else → `home`
 - `platforms`: Facebook and Instagram always; Google for amenity, floor plan and special posts
 - `assetId` and `mediaKind: "image"`: the chosen library photo. Use a floor plan image for floor plan posts when one exists. Tag every floor plan flyer `floorplan:<Plan name>` in `media`: the command center shows those images whole, with no logo or Equal Housing overlay, because the flyer already has both. Holiday and fun-day posts use the branded graphic (`assetId: null`).
 - `overlay`: `{corner: community.defaultCorner || "tr", label}`. Give holiday, fun-day and special posts a 2–4 word headline; leave other labels empty. Amenity posts with a photo get an amenity icon automatically, picked from the post title and photo, so use plain amenity words in titles ("Pool and sundeck spotlight", "Bark park spotlight"). To force one, set `overlay.icon` to a key from `ICONS` in the command center, or `"none"`.

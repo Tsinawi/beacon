@@ -1,0 +1,435 @@
+{
+ "area": {
+  "source": "OpenStreetMap",
+  "attribution": "\u00a9 OpenStreetMap contributors",
+  "fetchedAt": "2026-11-12T19:37:32Z",
+  "center": {
+   "lat": 42.53328,
+   "lon": -83.28379,
+   "matched": "Glens of Bloomfield Apartments, Bloomfield Township, Oakland County, Michigan, United States"
+  },
+  "radiusMiles": 5.0,
+  "places": [
+   {
+    "name": "Franklin Community Association",
+    "category": "Parks & nature",
+    "type": "park",
+    "miles": 1.4,
+    "osm": "https://www.openstreetmap.org/way/42057656"
+   },
+   {
+    "name": "Herndon's Walnut Lake Estates",
+    "category": "Parks & nature",
+    "type": "park",
+    "miles": 2.7,
+    "osm": "https://www.openstreetmap.org/way/565102097"
+   },
+   {
+    "name": "Valley Woods Nature Preserve",
+    "category": "Parks & nature",
+    "type": "nature reserve",
+    "miles": 2.7,
+    "osm": "https://www.openstreetmap.org/relation/11900369"
+   },
+   {
+    "name": "Bog Garden",
+    "category": "Parks & nature",
+    "type": "garden",
+    "miles": 3.1,
+    "osm": "https://www.openstreetmap.org/way/665334092"
+   },
+   {
+    "name": "The Sunken Garden",
+    "category": "Parks & nature",
+    "type": "garden",
+    "miles": 3.2,
+    "osm": "https://www.openstreetmap.org/way/621070873"
+   },
+   {
+    "name": "Sundial Garden",
+    "category": "Parks & nature",
+    "type": "garden",
+    "miles": 3.2,
+    "osm": "https://www.openstreetmap.org/way/665334096"
+   },
+   {
+    "name": "Storybook Trailhead (Giant Chair)",
+    "category": "Trails",
+    "type": "attraction",
+    "miles": 5.0,
+    "osm": "https://www.openstreetmap.org/node/13438959361"
+   },
+   {
+    "name": "Tim Hortons",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 0.8,
+    "osm": "https://www.openstreetmap.org/node/8579851914"
+   },
+   {
+    "name": "Chez Pierre et Genevieve",
+    "category": "Coffee & bakeries",
+    "type": "bakery",
+    "miles": 0.8,
+    "osm": "https://www.openstreetmap.org/node/12385590026"
+   },
+   {
+    "name": "Madeleine's French Patisserie",
+    "category": "Coffee & bakeries",
+    "type": "bakery",
+    "miles": 1.2,
+    "osm": "https://www.openstreetmap.org/way/662978960"
+   },
+   {
+    "name": "Kung Fu Tea",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 1.4,
+    "osm": "https://www.openstreetmap.org/node/9775468968"
+   },
+   {
+    "name": "Starbucks",
+    "category": "Coffee & bakeries",
+    "type": "cafe",
+    "miles": 2.6,
+    "osm": "https://www.openstreetmap.org/node/9406054837"
+   },
+   {
+    "name": "Blue Canary Confections",
+    "category": "Coffee & bakeries",
+    "type": "bakery",
+    "miles": 3.5,
+    "osm": "https://www.openstreetmap.org/way/1155674763"
+   },
+   {
+    "name": "Noodles & Company",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 1.7,
+    "osm": "https://www.openstreetmap.org/node/4874805142"
+   },
+   {
+    "name": "Green Lantern",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 2.2,
+    "osm": "https://www.openstreetmap.org/node/14108449158"
+   },
+   {
+    "name": "Daebak Korean Barbeque",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 2.9,
+    "osm": "https://www.openstreetmap.org/node/10693349046"
+   },
+   {
+    "name": "Buddy's Pizza",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 3.1,
+    "osm": "https://www.openstreetmap.org/way/435461014"
+   },
+   {
+    "name": "National Coney Island",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 3.5,
+    "osm": "https://www.openstreetmap.org/way/706966070"
+   },
+   {
+    "name": "Brooklyn Pizza",
+    "category": "Restaurants",
+    "type": "restaurant",
+    "miles": 3.6,
+    "osm": "https://www.openstreetmap.org/node/9603703741"
+   },
+   {
+    "name": "Stroh's Ice Cream Parlor",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 1.3,
+    "osm": "https://www.openstreetmap.org/node/4434934807"
+   },
+   {
+    "name": "Dairy Mat",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 3.8,
+    "osm": "https://www.openstreetmap.org/way/565101235"
+   },
+   {
+    "name": "Swirlberry",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 3.9,
+    "osm": "https://www.openstreetmap.org/node/7431474342"
+   },
+   {
+    "name": "44 Scoops",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 3.9,
+    "osm": "https://www.openstreetmap.org/node/7431474304"
+   },
+   {
+    "name": "Menchie's",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 4.0,
+    "osm": "https://www.openstreetmap.org/node/4253629283"
+   },
+   {
+    "name": "Dairy Deluxe",
+    "category": "Treats",
+    "type": "ice cream",
+    "miles": 4.2,
+    "osm": "https://www.openstreetmap.org/way/1159055161"
+   },
+   {
+    "name": "Sidecar Slider Bar",
+    "category": "Breweries & wine",
+    "type": "bar",
+    "miles": 3.5,
+    "osm": "https://www.openstreetmap.org/node/10681768559"
+   },
+   {
+    "name": "Rose Room at 220",
+    "category": "Breweries & wine",
+    "type": "bar",
+    "miles": 3.6,
+    "osm": "https://www.openstreetmap.org/node/12108646742"
+   },
+   {
+    "name": "Dick O' Dow's",
+    "category": "Breweries & wine",
+    "type": "pub",
+    "miles": 3.6,
+    "osm": "https://www.openstreetmap.org/node/6280109231"
+   },
+   {
+    "name": "The Dow",
+    "category": "Breweries & wine",
+    "type": "pub",
+    "miles": 3.6,
+    "osm": "https://www.openstreetmap.org/node/10673996292"
+   },
+   {
+    "name": "luxe",
+    "category": "Breweries & wine",
+    "type": "bar",
+    "miles": 3.6,
+    "osm": "https://www.openstreetmap.org/node/3875601366"
+   },
+   {
+    "name": "Birmingham Pub",
+    "category": "Breweries & wine",
+    "type": "pub",
+    "miles": 3.8,
+    "osm": "https://www.openstreetmap.org/node/13204768301"
+   },
+   {
+    "name": "Meijer",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 2.3,
+    "osm": "https://www.openstreetmap.org/node/9103827655"
+   },
+   {
+    "name": "Holiday Market",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 2.6,
+    "osm": "https://www.openstreetmap.org/way/1155593964"
+   },
+   {
+    "name": "Tiger Market",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 2.9,
+    "osm": "https://www.openstreetmap.org/way/321754992"
+   },
+   {
+    "name": "Market Square",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 3.0,
+    "osm": "https://www.openstreetmap.org/way/1155674372"
+   },
+   {
+    "name": "Kroger",
+    "category": "Groceries & markets",
+    "type": "supermarket",
+    "miles": 3.2,
+    "osm": "https://www.openstreetmap.org/node/4225680474"
+   },
+   {
+    "name": "11 Mile / Noah's Marketplace (WB)",
+    "category": "Groceries & markets",
+    "type": "bus stop",
+    "miles": 3.4,
+    "osm": "https://www.openstreetmap.org/node/7192302133"
+   },
+   {
+    "name": "Target",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 3.3,
+    "osm": "https://www.openstreetmap.org/way/319009998"
+   },
+   {
+    "name": "TJ\u00a0Maxx",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 3.3,
+    "osm": "https://www.openstreetmap.org/node/7300687538"
+   },
+   {
+    "name": "Orchard Mall",
+    "category": "Shopping",
+    "type": "mall",
+    "miles": 3.9,
+    "osm": "https://www.openstreetmap.org/way/153737287"
+   },
+   {
+    "name": "Old Orchard Shopping Center",
+    "category": "Shopping",
+    "type": "mall",
+    "miles": 3.9,
+    "osm": "https://www.openstreetmap.org/way/153723650"
+   },
+   {
+    "name": "Burlington",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 3.9,
+    "osm": "https://www.openstreetmap.org/node/7434783255"
+   },
+   {
+    "name": "Kohl's",
+    "category": "Shopping",
+    "type": "department store",
+    "miles": 4.0,
+    "osm": "https://www.openstreetmap.org/node/1661882618"
+   },
+   {
+    "name": "Seligman Performing Arts Center",
+    "category": "Arts & entertainment",
+    "type": "arts centre",
+    "miles": 1.6,
+    "osm": "https://www.openstreetmap.org/node/14087975458"
+   },
+   {
+    "name": "Franklin Historical Museum",
+    "category": "Arts & entertainment",
+    "type": "museum",
+    "miles": 1.7,
+    "osm": "https://www.openstreetmap.org/way/1163429418"
+   },
+   {
+    "name": "Birmingham Bloomfield Art Center",
+    "category": "Arts & entertainment",
+    "type": "arts centre",
+    "miles": 1.9,
+    "osm": "https://www.openstreetmap.org/way/477262439"
+   },
+   {
+    "name": "Performing Arts Center",
+    "category": "Arts & entertainment",
+    "type": "theatre",
+    "miles": 2.8,
+    "osm": "https://www.openstreetmap.org/way/562636323"
+   },
+   {
+    "name": "Saint Dunstan's Playhouse",
+    "category": "Arts & entertainment",
+    "type": "theatre",
+    "miles": 3.0,
+    "osm": "https://www.openstreetmap.org/way/621069310"
+   },
+   {
+    "name": "Cranbrook Art Museum",
+    "category": "Arts & entertainment",
+    "type": "museum",
+    "miles": 3.0,
+    "osm": "https://www.openstreetmap.org/node/9174991325"
+   },
+   {
+    "name": "Lincoln Hills Golf Course",
+    "category": "Recreation",
+    "type": "golf course",
+    "miles": 1.8,
+    "osm": "https://www.openstreetmap.org/way/294239614"
+   },
+   {
+    "name": "Wallace Ice Arena",
+    "category": "Recreation",
+    "type": "ice rink",
+    "miles": 2.9,
+    "osm": "https://www.openstreetmap.org/way/562637429"
+   },
+   {
+    "name": "Lower Fields",
+    "category": "Recreation",
+    "type": "sports centre",
+    "miles": 3.1,
+    "osm": "https://www.openstreetmap.org/way/838666446"
+   },
+   {
+    "name": "Glen Oaks Golf Course",
+    "category": "Recreation",
+    "type": "golf course",
+    "miles": 3.7,
+    "osm": "https://www.openstreetmap.org/way/294269498"
+   },
+   {
+    "name": "Swimming pool",
+    "category": "Recreation",
+    "type": "sports centre",
+    "miles": 4.0,
+    "osm": "https://www.openstreetmap.org/node/9693051190"
+   },
+   {
+    "name": "Springdale Park and Golf Course",
+    "category": "Recreation",
+    "type": "golf course",
+    "miles": 4.1,
+    "osm": "https://www.openstreetmap.org/way/294239622"
+   },
+   {
+    "name": "Franklin Public Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 1.2,
+    "osm": "https://www.openstreetmap.org/way/635317682"
+   },
+   {
+    "name": "Bloomfield Township Public Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 2.2,
+    "osm": "https://www.openstreetmap.org/node/367813727"
+   },
+   {
+    "name": "Baldwin Public Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 3.5,
+    "osm": "https://www.openstreetmap.org/way/51968290"
+   },
+   {
+    "name": "Southfield Public Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 4.1,
+    "osm": "https://www.openstreetmap.org/way/273388252"
+   },
+   {
+    "name": "West Bloomfield Township Public Library",
+    "category": "Libraries",
+    "type": "library",
+    "miles": 5.0,
+    "osm": "https://www.openstreetmap.org/way/153285523"
+   }
+  ]
+ }
+}
