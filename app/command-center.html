@@ -128,6 +128,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .rail-toggle:hover { color: var(--fg); border-color: var(--muted); }
 .rail-short { display: none; font-family: var(--f-mono); font-size: 10.5px; font-weight: 600; color: var(--muted); }
 .shell.collapsed { grid-template-columns: 52px minmax(0, 1fr); max-width: 1800px; }
+.shell.no-rail, .shell.no-rail.collapsed { grid-template-columns: minmax(0, 1fr); }
+.shell.no-rail .rail { display: none; }
 .shell.collapsed .rail-head { justify-content: center; }
 .shell.collapsed .rail-head .eyebrow, .shell.collapsed .rail-item > :not(.rail-dot):not(.rail-short) { display: none; }
 .shell.collapsed .rail-item { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 4px; padding: 8px 2px; }
@@ -804,6 +806,8 @@ function visiblePosts() {
 function renderAll() { renderTabs(); renderRail(); renderMain(); renderDrawer(); }
 function renderTabs() {
   document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === S.view)));
+  // Settings are company-wide, so the community list is hidden there.
+  document.querySelector('.shell').classList.toggle('no-rail', S.view === 'settings');
 }
 function commList() {
   return Object.entries(S.communities).filter(([, c]) => c.active !== false).sort((a, b) => String(a[1].name).localeCompare(String(b[1].name)));
