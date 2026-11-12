@@ -273,6 +273,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .pv-tab { border: 0; background: transparent; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12.5px; color: var(--muted); }
 .pv-tab[aria-selected="true"], .pv-tab[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); }
 .pv-slides { margin-left: auto; display: flex; gap: 2px; }
+.image-controls { display: flex; flex-direction: column; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
 
 .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
 .media-tile { position: relative; aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; border: 2px solid transparent; cursor: pointer; padding: 0; background: var(--surface-2); background-size: cover; background-position: center; }
@@ -1326,7 +1327,9 @@ function renderDrawer() {
     S.sample && !ro ? h('div', { class: 'field' }, h('label', { for: 'pe-rewrite', text: 'Rewrite with Claude' }),
       h('div', { class: 'row', style: { flexWrap: 'nowrap' } }, rewriteIn, h('button', { class: 'btn', disabled: D.rewriting, onclick: () => rewrite(rewriteIn.value) }, D.rewriting ? 'Writing…' : 'Rewrite'))) : null,
     h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Photo or video' }), mediaGrid,
-      h('span', { class: 'hint', text: mediaItems.length ? 'Photos come from this community’s library.' : 'This community has no photos yet. Upload here, or add them on the Communities tab.' })),
+      h('span', { class: 'hint', text: mediaItems.length ? 'Photos come from this community’s library.' : 'This community has no photos yet. Upload here, or add them on the Communities tab.' })));
+
+  const imageControls = [
     isPhotoPost(p) ? layoutField(p, c, ro) : null,
     p.assetId && p.mediaKind !== 'video' && !isFlyer(p) ? h('div', { class: 'row' },
       h('div', { class: 'field' }, h('label', { for: 'pe-icon', text: 'Amenity icon' }),
@@ -1341,9 +1344,10 @@ function renderDrawer() {
       h('div', { class: 'field', style: { flex: '0 0 150px' } }, h('label', { for: 'pe-corner', text: 'Logo corner' }),
         h('select', { id: 'pe-corner', disabled: ro, onchange: e => { p.overlay = { ...p.overlay, corner: e.target.value }; schedulePreview(); } },
           h('option', { value: 'tl', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tl' }, 'Top left'),
-          h('option', { value: 'tr', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tr' }, 'Top right')))) : null);
-
-  const right = h('div', { class: 'stack' }, preview,
+          h('option', { value: 'tr', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tr' }, 'Top right')))) : null].filter(Boolean);
+  const right = h('div', { class: 'stack' },
+    imageControls.length ? h('div', { class: 'image-controls' }, h('div', { class: 'eyebrow', text: 'Image' }), imageControls) : null,
+    preview,
     h('div', { class: 'toolbar' }, h('div', { class: 'eyebrow', text: 'Checks' }), h('span', { class: 'spacer' }),
       S.sample && !ro ? h('button', { class: 'btn', disabled: D.checking, onclick: () => claudeCheck(D) }, D.checking ? 'Checking…' : 'Check with Claude') : null),
     checks);
