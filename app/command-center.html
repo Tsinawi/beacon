@@ -427,7 +427,9 @@ const ICONS = {
 const ICON_WORDS = [['coffee','coffee'],['pool','pool'],['sundeck','pool'],['fitness','fitness'],['gym','fitness'],['bark','barkpark'],['dog park','barkpark'],['pet','pets'],['clubhouse','clubhouse'],['playground','playground'],['picnic','picnic'],['balcon','balcony'],['patio','balcony'],['washer','laundry'],['laundry','laundry'],['parking','parking'],['garage','parking'],['kitchen','kitchen'],['bedroom','bedroom'],['bath','bathroom'],['closet','closet'],['fireplace','fireplace'],['living','living'],['maintenance','maintenance'],['trash','trash'],['storage','storage'],['central air','ac'],['air condition','ac'],['renovat','renovated'],['townhome','townhome'],['multilevel','townhome'],['grounds','outdoor'],['outdoor','outdoor']];
 // 4:5 layouts for landscape photo posts. Auto rotates through LAYOUT_CYCLE per community, in date order within the month.
 const LAYOUTS = { blur: 'Blurred fill', match: 'Color-matched bands', panel: 'Brand panel', stack: 'Two-photo stack', carousel: 'Swipe carousel (2 slides)', full: 'Full photo' };
-const LAYOUT_CYCLE = ['blur', 'match', 'panel', 'stack', 'carousel'];
+const LAYOUT_CYCLE = ['blur', 'match', 'stack', 'carousel'];
+// Layouts offered for new posts. The brand panel is retired for now; its drawing code stays so already-approved panel posts still render.
+const LAYOUT_CHOICES = ['blur', 'match', 'stack', 'carousel', 'full'];
 const DEFAULT_SLOTS = ['10:00', '11:00', '12:00', '13:00', '14:00'];
 const LINKS = { home: 'Home page', floorplans: 'Floor plans', amenities: 'Amenities', tour: 'Schedule a tour', gallery: 'Photo gallery', neighborhood: 'Neighborhood' };
 const LINK_FOR_TYPE = { amenity: 'amenities', floorplan: 'floorplans', video: 'tour', special: 'home', local: 'neighborhood', holiday: 'home', funday: 'home', other: 'home' };
@@ -920,8 +922,9 @@ function autoLayout(p) {
 function layoutFor(p) {
   if (!isPhotoPost(p)) return 'full';
   if (p.status && p.status !== 'draft' && p.finalLayout) return p.finalLayout;
-  const chosen = p.overlay?.layout && p.overlay.layout !== 'auto' ? p.overlay.layout : autoLayout(p);
-  return chosen === 'stack' && !secondPhoto(p) ? 'panel' : chosen;
+  const set = p.overlay?.layout;
+  const chosen = set && LAYOUT_CHOICES.includes(set) ? set : autoLayout(p);
+  return chosen === 'stack' && !secondPhoto(p) ? 'blur' : chosen;
 }
 
 function mediaFor(p) { return p.assetId ? Object.values(S.media).find(x => x.assetId === p.assetId) : null; }
@@ -1414,15 +1417,15 @@ function renderDrawer() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.drawer && !document.querySelector('.modal')) closeDrawer(); });
 
 function layoutField(p, c, ro) {
-  const auto = autoLayout(p), cur = layoutFor(p), chosen = p.overlay?.layout || '';
+  const auto = autoLayout(p), cur = layoutFor(p), chosen = LAYOUT_CHOICES.includes(p.overlay?.layout) ? p.overlay.layout : '';
   const setO = patch => { p.overlay = { ...p.overlay, ...patch }; S.drawer.slide = 0; renderDrawer(); };
   const photos = Object.values(S.media).filter(m => m.communityId === p.communityId && m.kind !== 'video' && m.assetId !== p.assetId && !String(m.tag || '').startsWith('floorplan'));
   return h('div', { class: 'row' },
     h('div', { class: 'field' }, h('label', { for: 'pe-layout', text: 'Facebook & Instagram layout (4:5)' }),
       h('select', { id: 'pe-layout', disabled: ro, onchange: e => setO({ layout: e.target.value || undefined }) },
-        h('option', { value: '', selected: !chosen }, `Auto rotation (${LAYOUTS[auto === 'stack' && !secondPhoto(p) ? 'panel' : auto]})`),
-        Object.entries(LAYOUTS).map(([k2, l]) => h('option', { value: k2, selected: chosen === k2 }, l))),
-      cur !== (chosen || auto) && (chosen || auto) === 'stack' ? h('span', { class: 'hint', text: 'No second photo of this amenity in the library, so the brand panel is used. Pick a second photo to use the stack.' }) : null),
+        h('option', { value: '', selected: !chosen }, `Auto rotation (${LAYOUTS[auto === 'stack' && !secondPhoto(p) ? 'blur' : auto]})`),
+        LAYOUT_CHOICES.map(k2 => [k2, LAYOUTS[k2]]).map(([k2, l]) => h('option', { value: k2, selected: chosen === k2 }, l))),
+      cur !== (chosen || auto) && (chosen || auto) === 'stack' ? h('span', { class: 'hint', text: 'No second photo of this amenity in the library, so the blurred fill is used. Pick a second photo to use the stack.' }) : null),
     (chosen || auto) === 'stack' ? h('div', { class: 'field' }, h('label', { for: 'pe-photo2', text: 'Second photo' }),
       h('select', { id: 'pe-photo2', disabled: ro, onchange: e => setO({ assetId2: e.target.value || undefined }) },
         h('option', { value: '', selected: !p.overlay?.assetId2 }, 'Auto (same amenity)'),
