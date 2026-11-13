@@ -819,7 +819,7 @@ async function drawComposite(canvas, p, fmt = 'feed', slide = 0) {
     const s = Math.min(400 * k / logo.naturalWidth, 150 * k / logo.naturalHeight);
     const lw = logo.naturalWidth * s, lh = logo.naturalHeight * s;
     const lx = corner === 'tl' ? m : W - m - lw, ly = m;
-    let tone = c.logoTone || 'auto';
+    let tone = p.overlay?.logoTone || c.logoTone || 'auto';
     if (tone === 'auto') tone = regionLuma(ctx, lx, ly, lw, lh) < 150 ? 'white' : 'original';
     const art = tone === 'original' ? logo : tintLogo(logo, tone === 'white' ? '#ffffff' : '#111111');
     ctx.save();
@@ -1371,7 +1371,11 @@ function renderDrawer() {
       h('div', { class: 'field', style: { flex: '0 0 150px' } }, h('label', { for: 'pe-corner', text: 'Logo corner' }),
         h('select', { id: 'pe-corner', disabled: ro, onchange: e => { p.overlay = { ...p.overlay, corner: e.target.value }; schedulePreview(); } },
           h('option', { value: 'tl', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tl' }, 'Top left'),
-          h('option', { value: 'tr', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tr' }, 'Top right')))) : null].filter(Boolean);
+          h('option', { value: 'tr', selected: (p.overlay?.corner || c.defaultCorner || 'tr') === 'tr' }, 'Top right'))),
+      h('div', { class: 'field', style: { flex: '0 0 170px' } }, h('label', { for: 'pe-tone', text: 'Logo color' }),
+        h('select', { id: 'pe-tone', disabled: ro, onchange: e => { p.overlay = { ...p.overlay, logoTone: e.target.value || undefined }; schedulePreview(); } },
+          h('option', { value: '', selected: !p.overlay?.logoTone }, `Auto (${({ auto: 'by image', original: 'original', white: 'white', black: 'black' })[c.logoTone || 'auto']})`),
+          [['white', 'White'], ['black', 'Black'], ['original', 'Original colors']].map(([v, l]) => h('option', { value: v, selected: p.overlay?.logoTone === v }, l))))) : null].filter(Boolean);
   const right = h('div', { class: 'stack' },
     imageControls.length ? h('div', { class: 'image-controls' }, h('div', { class: 'eyebrow', text: 'Image' }), imageControls) : null,
     preview,
