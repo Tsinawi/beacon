@@ -959,6 +959,18 @@ function isFlyer(p) {
 }
 
 // ---------- scheduling, hashtags, links ----------
+// The publisher runs at 5 past each of these hours (scheduled task "Beacon publisher", America/Detroit), so posts are timed on the hour.
+const PUBLISH_HOURS = [10, 11, 12, 13, 14, 15, 16, 17];
+function hourLabel(t) { const [hh, mm] = t.split(':').map(Number); return `${(hh + 11) % 12 + 1}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}`; }
+function timeSelect(p, ro, onPick) {
+  const opts = PUBLISH_HOURS.map(hr => String(hr).padStart(2, '0') + ':00');
+  const cur = p.time || '';
+  const odd = cur && !opts.includes(cur);
+  return h('select', { id: 'pe-time', disabled: ro, title: 'Posts go out at 5 past the hour', onchange: e => onPick(e.target.value) },
+    !cur ? h('option', { value: '', selected: true }, 'Pick a time') : null,
+    odd ? h('option', { value: cur, selected: true }, `${hourLabel(cur)} (off the hour; goes out at the next :05 run)`) : null,
+    opts.map(t => h('option', { value: t, selected: cur === t }, `${hourLabel(t)} (posts ~${hourLabel(t).replace(':00', ':05')})`)));
+}
 function timeSlots() {
   const v = (S.settings?.timeSlots || []).filter(t => /^\d{2}:\d{2}$/.test(t));
   return v.length ? v : DEFAULT_SLOTS;
@@ -1334,7 +1346,7 @@ function renderDrawer() {
       h('div', { class: 'field' }, h('label', { for: 'pe-type', text: 'Post type' }), typeSel)),
     h('div', { class: 'row' },
       h('div', { class: 'field' }, h('label', { for: 'pe-date', text: 'Date' }), h('input', { type: 'date', id: 'pe-date', value: p.date, disabled: ro, onchange: e => set('date', e.target.value, true) })),
-      h('div', { class: 'field' }, h('label', { for: 'pe-time', text: 'Time' }), h('input', { type: 'time', id: 'pe-time', value: p.time || '', disabled: ro, onchange: e => set('time', e.target.value, true) }))),
+      h('div', { class: 'field' }, h('label', { for: 'pe-time', text: 'Time' }), timeSelect(p, ro, v => set('time', v, true)))),
     h('div', { class: 'field' }, h('span', { class: 'lbl', text: 'Platforms' }), h('div', { class: 'checks' },
       Object.entries(PLATFORMS).map(([k, l]) => h('label', null, h('input', { type: 'checkbox', id: 'pe-pl-' + k, checked: !!p.platforms?.[k], disabled: ro, onchange: e => { p.platforms = { ...p.platforms, [k]: e.target.checked }; renderDrawer(); } }), l)))),
     p.needsData ? h('div', { class: 'callout warn' }, h('b', { text: 'Needs website info. ' }), p.needsData,
