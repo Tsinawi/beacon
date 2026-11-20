@@ -1,0 +1,173 @@
+<title>Beacon Social Command Center</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one readable column; a full-width navy band for the headline and savings, then plain sections. Beacon Management brand colors. */
+:root {
+  --bg: #f7f8fa; --surface: #ffffff; --fg: #132a3f; --muted: #52657a; --line: #dde3ea;
+  --navy: #153a58; --teal: #55c1c7; --coral: #ee8f80; --tan: #f6ecd6;
+  --band: #153a58; --band-fg: #ffffff; --band-muted: #c4d4e2; --step: #eef4f8; --ok: #1e7f45;
+  --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", Roboto, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0c1724; --surface: #13233a; --fg: #e8eef5; --muted: #9fb0c2; --line: #2a405c;
+  --navy: #9cc5e6; --band: #0b1c2e; --band-fg: #ffffff; --band-muted: #9fb7cc; --step: #1a2d46; --ok: #6fd193; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0c1724; --surface: #13233a; --fg: #e8eef5; --muted: #9fb0c2; --line: #2a405c;
+  --navy: #9cc5e6; --band: #0b1c2e; --band-fg: #ffffff; --band-muted: #9fb7cc; --step: #1a2d46; --ok: #6fd193; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 1.45rem; color: var(--navy); }
+h3 { font-size: 1.02rem; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--f-display); font-weight: 700; font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.hero { background: var(--band); color: var(--band-fg); margin-top: calc(-1 * env(safe-area-inset-top, 0px)); padding-top: calc(env(safe-area-inset-top, 0px) + 2.6rem); padding-bottom: 2.6rem; }
+.hero .wrap { display: grid; gap: 1.6rem; }
+.hero .eyebrow { color: var(--teal); }
+.hero h1 { font-size: clamp(1.9rem, 4.6vw, 2.7rem); font-weight: 800; }
+.hero p { color: var(--band-muted); font-size: 1.06rem; }
+.savings { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.save { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.16); border-radius: 10px; padding: 16px 18px; display: grid; gap: 4px; min-width: 0; }
+.save .vendor { font-family: var(--f-display); font-weight: 700; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--teal); }
+.save .amt { font-family: var(--f-display); font-weight: 800; font-size: 1.9rem; font-variant-numeric: tabular-nums; }
+.save .amt small { font-size: .95rem; font-weight: 700; color: var(--band-muted); }
+.save .how { font-size: .9rem; color: var(--band-muted); }
+.save.total { background: var(--teal); border-color: var(--teal); color: #06202f; }
+.save.total .vendor, .save.total .how, .save.total .amt small { color: #06202f; }
+main { padding-block: 2.4rem 3rem; }
+main .wrap { display: grid; gap: 2.6rem; }
+section { display: grid; gap: 1rem; }
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.step { background: var(--step); border-radius: 10px; padding: 14px; display: grid; gap: 6px; align-content: start; position: relative; min-width: 0; }
+.step .who { font-family: var(--f-display); font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.step h3 { color: var(--navy); }
+.step p { font-size: .88rem; color: var(--muted); }
+.step.you { background: var(--tan); }
+.step.you .who, .step.you p { color: #6b5a33; }
+.step.you h3 { color: #153a58; }
+.step:not(:last-child)::after { content: "→"; position: absolute; right: -10px; top: 50%; transform: translate(50%, -50%); font-family: var(--f-display); font-weight: 800; color: var(--teal); z-index: 1; }
+@media (max-width: 720px) {
+  .flow { grid-template-columns: 1fr; }
+  .step:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -10px; transform: translate(-50%, 50%); }
+}
+.caps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; }
+.cap { display: grid; gap: 4px; border-top: 2px solid var(--teal); padding-top: 10px; min-width: 0; }
+.cap p { font-size: .95rem; color: var(--muted); }
+.proof { display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: 7.5rem 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row .d { font-family: var(--f-display); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--navy); }
+.row .ok { color: var(--ok); font-weight: 700; }
+.built { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; display: grid; gap: 14px; }
+.built ul, .next ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 6px; max-width: 68ch; }
+.quote { font-family: var(--f-display); font-weight: 700; font-size: 1.15rem; color: var(--navy); border-left: 3px solid var(--coral); padding-left: 14px; max-width: 60ch; }
+.foot { font-size: .82rem; color: var(--muted); }
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Beacon Management · Marketing</div>
+    <h1>Beacon Social: our own social media command center</h1>
+    <p>One place to plan, approve and automatically publish Facebook and Instagram posts for every Beacon community, built in house to replace paid posting services.</p>
+    <div class="savings" aria-label="Savings">
+      <div class="save">
+        <span class="vendor">SOCi · notice submitted</span>
+        <span class="amt">$800<small>/mo</small></span>
+        <span class="how">4 sites × $200/mo, starting Feb 1. That's $9,600 a year.</span>
+      </div>
+      <div class="save">
+        <span class="vendor">Respage · notice next</span>
+        <span class="amt" id="rp-amt">$199<small>/mo per site</small></span>
+        <span class="how" id="rp-how">$2,388 a year per property</span>
+      </div>
+      <div class="save total">
+        <span class="vendor">Combined savings</span>
+        <span class="amt" id="tot-amt">$9,600+<small>/yr</small></span>
+        <span class="how" id="tot-how">SOCi now, plus every Respage site we move over</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section>
+      <div class="eyebrow">How it works</div>
+      <h2>From website to Facebook and Instagram, with one approval</h2>
+      <div class="flow">
+        <div class="step"><span class="who">Automatic · 18th</span><h3>Read the website</h3><p>Pulls each community's amenities, floor plans, specials and photos. The website is the source of truth.</p></div>
+        <div class="step"><span class="who">Automatic</span><h3>Draft the month</h3><p>Writes 3–4 posts a week in the Beacon voice and builds branded 4:5 images.</p></div>
+        <div class="step"><span class="who">Automatic</span><h3>Check every post</h3><p>Flags fair housing wording, facts not on the website, and photos that don't match the subject.</p></div>
+        <div class="step you"><span class="who">Marketing</span><h3>Review and approve</h3><p>Drafts are on the calendar by the 20th. Nothing posts without approval.</p></div>
+        <div class="step"><span class="who">Automatic · hourly</span><h3>Publish</h3><p>Posts to Facebook and Instagram on schedule and records the result.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="eyebrow">What it does</div>
+      <h2>What leadership gets</h2>
+      <div class="caps">
+        <div class="cap"><h3>One calendar for every community</h3><p>See, edit and approve a month of posts for any property, or all of them, in one place.</p></div>
+        <div class="cap"><h3>Content that stays accurate</h3><p>Captions use only what each community's website says. If a fact is missing, the post is flagged instead of guessed.</p></div>
+        <div class="cap"><h3>Fair housing built in</h3><p>Every caption is checked before approval, and every branded image carries the Equal Housing Opportunity line.</p></div>
+        <div class="cap"><h3>On-brand images automatically</h3><p>Real property photos get the community logo, amenity icons and four rotating Beacon layouts. Floor plan flyers post clean.</p></div>
+        <div class="cap"><h3>Fast one-off posts</h3><p>Upload a finished graphic, such as a new phone number, and Claude writes the caption from what's in the image.</p></div>
+        <div class="cap"><h3>Safe, controlled publishing</h3><p>A dedicated Meta account with posting-only access. Posts that change after approval are blocked, and publishing can be paused with one click.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="eyebrow">Results so far</div>
+      <h2>Live and posting at two pilot communities</h2>
+      <div class="proof">
+        <div class="row"><span class="d">Oct 20</span><span>Project started. Glens of Bloomfield and Stoneybrooke websites read into the system.</span></div>
+        <div class="row"><span class="d">Nov 12</span><span>Facebook and Instagram connected for both pilot communities.</span></div>
+        <div class="row"><span class="d">Nov 13</span><span>First live post: Glens of Bloomfield, Bradley floor plan. <span class="ok">Posted.</span></span></div>
+        <div class="row"><span class="d">Nov 18</span><span>First fully automatic post: Stoneybrooke clubhouse, approved in the command center and published on schedule with no manual steps. <span class="ok">Posted.</span></span></div>
+        <div class="row"><span class="d">Feb 1</span><span>SOCi service ends for 4 sites.</span></div>
+      </div>
+    </section>
+
+    <section class="built">
+      <div class="eyebrow">How I built it</div>
+      <h2>My ideas, brought to life with Claude Code</h2>
+      <p class="quote">The biggest help was the coding. I knew what our communities needed; Claude Code turned those ideas into working software.</p>
+      <p>I described what I wanted in plain language, the way I would brief an agency, and Claude Code wrote, tested and published the code. I reviewed each version and asked for changes until it worked the way our team does.</p>
+      <ul>
+        <li><b>I set the direction:</b> which platforms, the posting cadence and content mix, the approval rules, the brand look, and what to fix when a draft wasn't right.</li>
+        <li><b>Claude Code did the building:</b> the calendar and editor, the website reader, the branded image designer, the content checks and the automatic publisher.</li>
+        <li><b>Security came first:</b> Meta access runs through a dedicated account that can only create content on the pilot Pages. Its key is held in a secure credential store, never in the code or in chat.</li>
+        <li><b>Time:</b> about four weeks from first idea to fully automatic posting.</li>
+      </ul>
+    </section>
+
+    <section class="next">
+      <div class="eyebrow">Next</div>
+      <h2>Before rolling out to every community</h2>
+      <ul>
+        <li>A shared holiday graphics library I design once in Canva and reuse across all properties.</li>
+        <li>Automatic images for local spotlight posts.</li>
+        <li>Moving Respage communities over and submitting notice.</li>
+        <li>Adding Google Business Profile posting.</li>
+      </ul>
+    </section>
+
+    <p class="foot">Savings figures are based on current SOCi ($200/mo per site) and Respage ($199/mo per site) pricing.</p>
+  </div>
+</main>
+
+<script>
+// Set this to the number of live Respage sites to fill in the Respage and combined totals.
+const RESPAGE_SITES = null;
+const fmt = n => '$' + n.toLocaleString('en-US');
+if (RESPAGE_SITES) {
+  const mo = 199 * RESPAGE_SITES, yr = mo * 12, tot = 9600 + yr;
+  document.getElementById('rp-amt').innerHTML = fmt(mo) + '<small>/mo</small>';
+  document.getElementById('rp-how').textContent = `${RESPAGE_SITES} sites × $199/mo. That's ${fmt(yr)} a year.`;
+  document.getElementById('tot-amt').innerHTML = fmt(tot) + '<small>/yr</small>';
+  document.getElementById('tot-how').textContent = `${fmt(800 + mo)} a month across SOCi and Respage`;
+}
+</script>
